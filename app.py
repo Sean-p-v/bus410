@@ -114,7 +114,7 @@ if sel_states:
 filtered = df[mask].copy()
 
 # ── Header ───────────────────────────────────────────────────────────────────
-st.title("College Scorecard Explorer")
+st.title("Work Force Development Economic Mobility - College majors and AI.")
 st.caption(
     "Analyzing U.S. higher education outcomes across 6,500+ institutions · "
     "Data: U.S. Department of Education College Scorecard (2020–2024)"
