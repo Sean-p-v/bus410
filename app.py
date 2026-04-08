@@ -14,8 +14,7 @@ from plotly.subplots import make_subplots
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Work Force Development Economic Mobility - College majors and AI.
-",
+    page_title="Work Force Development Economic Mobility - College majors and AI.",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded",
