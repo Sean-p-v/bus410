@@ -1,6 +1,7 @@
 """
 College Scorecard Explorer
 Interactive dashboard for analyzing U.S. higher education data (2020-2024)
+with AI labor market impact analysis.
 Group 5 Project — Analytics for Good
 """
 
@@ -9,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+from plotly.subplots import make_subplots
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -63,6 +65,15 @@ def load_data():
 
 
 df = load_data()
+
+
+@st.cache_data
+def load_bls_data():
+    bls = pd.read_csv("bls_with_ai_exposure.csv", low_memory=False)
+    return bls
+
+
+bls = load_bls_data()
 
 # ── Sidebar filters ──────────────────────────────────────────────────────────
 st.sidebar.title("🎓 Filters")
@@ -120,8 +131,8 @@ k5.metric("Avg Completion Rate", f"{filtered['C150_4'].mean():.0%}" if filtered[
 st.markdown("---")
 
 # ── Tabs ─────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📊 Overview", "💰 Earnings & ROI", "🎯 Admissions", "🗺️ Geographic", "🔍 Institution Lookup"
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📊 Overview", "💰 Earnings & ROI", "🎯 Admissions", "🗺️ Geographic", "🤖 AI Impact", "🔍 Institution Lookup"
 ])
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -450,9 +461,281 @@ with tab4:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 5: INSTITUTION LOOKUP
+# TAB 5: AI IMPACT
 # ════════════════════════════════════════════════════════════════════════════
 with tab5:
+    st.header("AI Impact on Career Fields")
+    st.markdown(
+        "Combining [Anthropic's Labor Market Impact Study](https://www.anthropic.com/research/labor-market-impacts) "
+        "(March 2026) with BLS Employment Projections (2024–2034) to analyze how AI exposure "
+        "intersects with job growth and wages."
+    )
+
+    # ── KPIs ──
+    ai_k1, ai_k2, ai_k3, ai_k4 = st.columns(4)
+    ai_k1.metric("Occupations Analyzed", f"{len(bls):,}")
+    high_exp = bls[bls["AI_Theoretical_Exposure"] >= 80]
+    ai_k2.metric("High AI Exposure (≥80%)", f"{len(high_exp):,}")
+    declining = bls[bls["Employment Percent Change, 2024-2034"] < 0]
+    ai_k3.metric("Declining Occupations", f"{len(declining):,}")
+    avg_gap = bls["AI_Automation_Gap"].mean()
+    ai_k4.metric("Avg Automation Gap", f"{avg_gap:.1f}pp")
+
+    st.markdown("---")
+
+    # ── Chart 1: Theoretical vs Observed Exposure by Category ──
+    st.subheader("Theoretical vs Observed AI Exposure by Occupation Category")
+    st.caption(
+        "Theoretical exposure = tasks AI *could* perform. "
+        "Observed exposure = tasks AI is *actually* performing. The gap represents unrealized automation potential."
+    )
+
+    cat_data = (
+        bls.groupby("Occupation_Category")
+        .agg(
+            theoretical=("AI_Theoretical_Exposure", "first"),
+            observed=("AI_Observed_Exposure", "first"),
+            num_occupations=("SOC_Code", "count"),
+            avg_wage=("Median Annual Wage 2024", "mean"),
+            avg_growth=("Employment Percent Change, 2024-2034", "mean"),
+        )
+        .reset_index()
+        .sort_values("theoretical", ascending=True)
+    )
+
+    fig_exp = go.Figure()
+    fig_exp.add_trace(go.Bar(
+        y=cat_data["Occupation_Category"], x=cat_data["theoretical"],
+        name="Theoretical Exposure (%)", orientation="h",
+        marker_color="#667eea", opacity=0.7,
+    ))
+    fig_exp.add_trace(go.Bar(
+        y=cat_data["Occupation_Category"], x=cat_data["observed"],
+        name="Observed Exposure (%)", orientation="h",
+        marker_color="#f093fb", opacity=0.9,
+    ))
+    fig_exp.update_layout(
+        barmode="overlay", height=550,
+        xaxis_title="AI Exposure (%)",
+        legend=dict(orientation="h", y=1.08),
+        margin=dict(l=200),
+    )
+    st.plotly_chart(fig_exp, use_container_width=True)
+
+    # ── Chart 2 & 3: AI Exposure vs Employment Growth / Wages ──
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("AI Exposure vs Employment Growth")
+        fig_growth = px.scatter(
+            bls.dropna(subset=["AI_Theoretical_Exposure", "Employment Percent Change, 2024-2034"]),
+            x="AI_Theoretical_Exposure",
+            y="Employment Percent Change, 2024-2034",
+            color="Occupation_Category",
+            size="Employment 2024",
+            size_max=18,
+            opacity=0.7,
+            hover_data=["Occupation_Clean"],
+            labels={
+                "AI_Theoretical_Exposure": "Theoretical AI Exposure (%)",
+                "Employment Percent Change, 2024-2034": "Projected Growth 2024–2034 (%)",
+                "Occupation_Category": "Category",
+            },
+            color_discrete_sequence=px.colors.qualitative.Set3,
+        )
+        # Add trend line
+        from numpy.polynomial.polynomial import polyfit
+        x_vals = bls["AI_Theoretical_Exposure"].dropna()
+        y_vals = bls.loc[x_vals.index, "Employment Percent Change, 2024-2034"].dropna()
+        common_idx = x_vals.index.intersection(y_vals.index)
+        if len(common_idx) > 2:
+            b, m = polyfit(x_vals[common_idx], y_vals[common_idx], 1)
+            x_line = [x_vals.min(), x_vals.max()]
+            fig_growth.add_trace(go.Scatter(
+                x=x_line, y=[b + m * x for x in x_line],
+                mode="lines", name="Trend",
+                line=dict(color="red", width=2, dash="dash"),
+            ))
+        fig_growth.update_layout(
+            height=500, showlegend=False,
+        )
+        st.plotly_chart(fig_growth, use_container_width=True)
+
+    with col2:
+        st.subheader("AI Exposure vs Median Wage")
+        fig_wage = px.scatter(
+            bls.dropna(subset=["AI_Theoretical_Exposure", "Median Annual Wage 2024"]),
+            x="AI_Theoretical_Exposure",
+            y="Median Annual Wage 2024",
+            color="Occupation_Category",
+            size="Employment 2024",
+            size_max=18,
+            opacity=0.7,
+            hover_data=["Occupation_Clean"],
+            labels={
+                "AI_Theoretical_Exposure": "Theoretical AI Exposure (%)",
+                "Median Annual Wage 2024": "Median Annual Wage ($)",
+                "Occupation_Category": "Category",
+            },
+            color_discrete_sequence=px.colors.qualitative.Set3,
+        )
+        fig_wage.update_layout(height=500, showlegend=False)
+        st.plotly_chart(fig_wage, use_container_width=True)
+
+    # ── Chart 4: Top declining occupations with high AI exposure ──
+    st.subheader("Most At-Risk Occupations: High AI Exposure + Declining Employment")
+    at_risk = bls[
+        (bls["AI_Theoretical_Exposure"] >= 70)
+        & (bls["Employment Percent Change, 2024-2034"] < 0)
+    ].sort_values("Employment Percent Change, 2024-2034").head(20).copy()
+
+    if not at_risk.empty:
+        fig_risk = px.bar(
+            at_risk,
+            y="Occupation_Clean", x="Employment Percent Change, 2024-2034",
+            color="AI_Theoretical_Exposure",
+            orientation="h",
+            color_continuous_scale="Reds",
+            hover_data=["Median Annual Wage 2024", "AI_Observed_Exposure"],
+            labels={
+                "Occupation_Clean": "",
+                "Employment Percent Change, 2024-2034": "Projected Growth (%)",
+                "AI_Theoretical_Exposure": "AI Exposure (%)",
+            },
+        )
+        fig_risk.update_layout(height=600, margin=dict(l=300), yaxis=dict(autorange="reversed"))
+        st.plotly_chart(fig_risk, use_container_width=True)
+
+    # ── Chart 5: Growth opportunities despite AI ──
+    st.subheader("Resilient Occupations: Growing Despite High AI Exposure")
+    resilient = bls[
+        (bls["AI_Theoretical_Exposure"] >= 50)
+        & (bls["Employment Percent Change, 2024-2034"] > 3)
+    ].sort_values("Employment Percent Change, 2024-2034", ascending=False).head(15).copy()
+
+    if not resilient.empty:
+        fig_res = px.bar(
+            resilient,
+            y="Occupation_Clean", x="Employment Percent Change, 2024-2034",
+            color="AI_Theoretical_Exposure",
+            orientation="h",
+            color_continuous_scale="Greens",
+            hover_data=["Median Annual Wage 2024", "AI_Observed_Exposure"],
+            labels={
+                "Occupation_Clean": "",
+                "Employment Percent Change, 2024-2034": "Projected Growth (%)",
+                "AI_Theoretical_Exposure": "AI Exposure (%)",
+            },
+        )
+        fig_res.update_layout(height=500, margin=dict(l=300), yaxis=dict(autorange="reversed"))
+        st.plotly_chart(fig_res, use_container_width=True)
+
+    # ── Chart 6: Education level and AI exposure ──
+    st.subheader("AI Exposure by Education Requirement")
+    ed_exp = (
+        bls.groupby("Typical Entry-Level Education")
+        .agg(
+            avg_theoretical=("AI_Theoretical_Exposure", "mean"),
+            avg_observed=("AI_Observed_Exposure", "mean"),
+            avg_wage=("Median Annual Wage 2024", "mean"),
+            avg_growth=("Employment Percent Change, 2024-2034", "mean"),
+            count=("SOC_Code", "count"),
+        )
+        .reset_index()
+        .sort_values("avg_theoretical", ascending=True)
+    )
+
+    fig_ed = make_subplots(specs=[[{"secondary_y": True}]])
+    fig_ed.add_trace(
+        go.Bar(
+            y=ed_exp["Typical Entry-Level Education"],
+            x=ed_exp["avg_theoretical"],
+            name="Avg Theoretical Exposure (%)",
+            orientation="h", marker_color="#667eea", opacity=0.7,
+        ),
+        secondary_y=False,
+    )
+    fig_ed.add_trace(
+        go.Bar(
+            y=ed_exp["Typical Entry-Level Education"],
+            x=ed_exp["avg_observed"],
+            name="Avg Observed Exposure (%)",
+            orientation="h", marker_color="#f093fb", opacity=0.9,
+        ),
+        secondary_y=False,
+    )
+    fig_ed.update_layout(
+        barmode="overlay", height=400,
+        xaxis_title="AI Exposure (%)",
+        legend=dict(orientation="h", y=1.1),
+        margin=dict(l=250),
+    )
+    st.plotly_chart(fig_ed, use_container_width=True)
+
+    # ── Interactive table ──
+    st.subheader("Explore All Occupations")
+    cat_filter = st.multiselect(
+        "Filter by category:",
+        sorted(bls["Occupation_Category"].dropna().unique()),
+        default=[],
+        key="ai_cat_filter",
+    )
+    ed_filter = st.multiselect(
+        "Filter by education level:",
+        sorted(bls["Typical Entry-Level Education"].dropna().unique()),
+        default=[],
+        key="ai_ed_filter",
+    )
+
+    table_df = bls.copy()
+    if cat_filter:
+        table_df = table_df[table_df["Occupation_Category"].isin(cat_filter)]
+    if ed_filter:
+        table_df = table_df[table_df["Typical Entry-Level Education"].isin(ed_filter)]
+
+    display = table_df[[
+        "Occupation_Clean", "Occupation_Category", "AI_Theoretical_Exposure",
+        "AI_Observed_Exposure", "AI_Automation_Gap",
+        "Employment Percent Change, 2024-2034", "Median Annual Wage 2024",
+        "Typical Entry-Level Education",
+    ]].rename(columns={
+        "Occupation_Clean": "Occupation",
+        "Occupation_Category": "Category",
+        "AI_Theoretical_Exposure": "AI Theoretical (%)",
+        "AI_Observed_Exposure": "AI Observed (%)",
+        "AI_Automation_Gap": "Automation Gap (pp)",
+        "Employment Percent Change, 2024-2034": "Growth 2024-34 (%)",
+        "Median Annual Wage 2024": "Median Wage ($)",
+        "Typical Entry-Level Education": "Education",
+    }).sort_values("AI Theoretical (%)", ascending=False).reset_index(drop=True)
+
+    st.dataframe(display, use_container_width=True, height=500)
+
+    # ── Key findings callout ──
+    st.markdown("---")
+    st.subheader("Key Findings")
+    col_f1, col_f2 = st.columns(2)
+    with col_f1:
+        st.markdown(
+            "**The Automation Gap** — Across all categories, there is a large gap between "
+            "what AI *could* theoretically automate and what it is *actually* automating today. "
+            "Computer & Math occupations have the highest observed exposure at 33%, yet even "
+            "there, 61 percentage points of theoretical capability remain unrealized."
+        )
+    with col_f2:
+        st.markdown(
+            "**Higher Education ≠ Protection** — Occupations requiring bachelor's and graduate "
+            "degrees have *higher* AI exposure than those requiring less education. "
+            "This challenges the conventional wisdom that more education shields workers from "
+            "automation, and is central to the question of whether institutional prestige "
+            "provides a meaningful earnings premium in an AI-transformed labor market."
+        )
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TAB 6: INSTITUTION LOOKUP
+# ════════════════════════════════════════════════════════════════════════════
+with tab6:
     st.header("Institution Lookup")
 
     search = st.text_input("Search for an institution:", placeholder="e.g. University of San Francisco")
@@ -535,7 +818,9 @@ with tab5:
 # ── Footer ───────────────────────────────────────────────────────────────────
 st.markdown("---")
 st.caption(
-    "**Group 5 Project** · Data: [U.S. Department of Education College Scorecard]"
-    "(https://collegescorecard.ed.gov/) · "
+    "**Group 5 Project — Analytics for Good** · "
+    "Data: [U.S. DOE College Scorecard](https://collegescorecard.ed.gov/) · "
+    "[Anthropic Labor Market Impact Study](https://www.anthropic.com/research/labor-market-impacts) · "
+    "[BLS Employment Projections 2024–2034](https://www.bls.gov/emp/) · "
     "Built with Streamlit & Plotly"
 )
