@@ -1,0 +1,57 @@
+search_title,ai_exposed,company_type,avg_min_yoe,avg_salary_min,avg_salary_max,postings
+Accountant,True,established,,85000.0,85000.0,3
+Accountant,True,mixed,,,,1
+Accountant,True,startup,,90000.0,97500.0,7
+Accountant,True,unknown,4.0,159826.61290322582,160310.48387096773,89
+Biomedical Equipment Technician,False,established,3.0,,,3
+Biomedical Equipment Technician,False,unknown,3.090909090909091,100977.0,102227.0,97
+Business Analyst,True,established,8.0,120000.0,120000.0,6
+Business Analyst,True,startup,4.0,177000.0,177000.0,3
+Business Analyst,True,unknown,3.5384615384615383,127497.8,127497.8,91
+Construction Manager,False,established,10.0,152763.66666666666,152763.66666666666,11
+Construction Manager,False,startup,5.0,317040.0,317040.0,7
+Construction Manager,False,unknown,15.11111111111111,139318.125,139318.125,82
+Data Scientist,True,established,,272866.6666666667,272866.6666666667,6
+Data Scientist,True,startup,,179000.0,179000.0,4
+Data Scientist,True,unknown,7.25,241407.6923076923,242753.84615384616,90
+Electrician,False,established,,,,2
+Electrician,False,startup,2.0,,,2
+Electrician,False,unknown,17.133333333333333,114733.33333333333,114733.33333333333,96
+Elevator Installer,False,established,,,,2
+Elevator Installer,False,startup,,,,1
+Elevator Installer,False,unknown,11.923076923076923,75237.42857142857,80951.71428571429,81
+Financial Analyst,True,established,2.75,122500.0,122500.0,8
+Financial Analyst,True,mixed,,,,1
+Financial Analyst,True,unknown,13.03448275862069,145551.0909090909,146914.72727272726,91
+HVAC Technician,False,established,5.0,75000.0,75000.0,6
+HVAC Technician,False,startup,5.0,134000.0,134000.0,1
+HVAC Technician,False,unknown,23.6875,100466.66666666667,104466.66666666667,93
+Human Resources Manager,True,established,3.0,132550.0,132550.0,10
+Human Resources Manager,True,startup,3.0,80000.0,80000.0,6
+Human Resources Manager,True,unknown,4.777777777777778,144385.0,145791.25,84
+IT Systems Analyst,True,established,5.0,120000.0,120000.0,7
+IT Systems Analyst,True,startup,,,,3
+IT Systems Analyst,True,unknown,3.75,114190.82608695653,114625.60869565218,90
+Industrial Machinery Mechanic,False,established,,,,4
+Industrial Machinery Mechanic,False,unknown,7.6,78550.0,78550.0,87
+Investment Banking Analyst,True,established,2.0,125000.0,125000.0,26
+Investment Banking Analyst,True,mixed,,,,1
+Investment Banking Analyst,True,startup,5.0,105000.0,105000.0,3
+Investment Banking Analyst,True,unknown,3.5294117647058822,126734.21739130435,128038.56521739131,70
+Machine Learning Engineer,True,established,2.0,212886.33333333334,212886.33333333334,5
+Machine Learning Engineer,True,startup,5.0,223825.0,223825.0,26
+Machine Learning Engineer,True,unknown,5.833333333333333,254207.31707317074,254207.31707317074,69
+Marketing Analyst,True,established,4.0,104000.0,104000.0,18
+Marketing Analyst,True,startup,2.0,,,2
+Marketing Analyst,True,unknown,3.6666666666666665,118028.75,118028.75,80
+Medical Assistant,False,startup,,,,4
+Medical Assistant,False,unknown,9.428571428571429,66440.0,66440.0,96
+Plumber,False,established,,,,3
+Plumber,False,unknown,14.5625,115392.81818181818,115392.81818181818,97
+Registered Nurse,False,established,,97800.0,97800.0,14
+Registered Nurse,False,unknown,5.6,107943.0,107943.0,86
+Social Worker,False,established,,83335.0,83335.0,2
+Social Worker,False,unknown,6.5,69378.2,69378.2,98
+Software Engineer,True,established,,201800.0,201800.0,3
+Software Engineer,True,startup,,185630.0,185630.0,15
+Software Engineer,True,unknown,3.1666666666666665,194044.6,195489.04444444444,82

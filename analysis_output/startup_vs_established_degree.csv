@@ -1,0 +1,66 @@
+search_title,ai_exposed,company_type,degree_requirement,count
+Accountant,True,established,not_mentioned,3
+Accountant,True,startup,any_degree,2
+Accountant,True,startup,not_mentioned,5
+Biomedical Equipment Technician,False,established,not_mentioned,3
+Business Analyst,True,established,any_degree,3
+Business Analyst,True,established,not_mentioned,3
+Business Analyst,True,startup,preferred,3
+Construction Manager,False,established,any_degree,4
+Construction Manager,False,established,no_degree,1
+Construction Manager,False,established,not_mentioned,5
+Construction Manager,False,established,preferred,1
+Construction Manager,False,startup,any_degree,2
+Construction Manager,False,startup,not_mentioned,2
+Construction Manager,False,startup,preferred,3
+Data Scientist,True,established,any_degree,3
+Data Scientist,True,established,not_mentioned,3
+Data Scientist,True,startup,any_degree,1
+Data Scientist,True,startup,not_mentioned,2
+Data Scientist,True,startup,preferred,1
+Electrician,False,established,not_mentioned,2
+Electrician,False,startup,any_degree,1
+Electrician,False,startup,not_mentioned,1
+Elevator Installer,False,established,not_mentioned,2
+Elevator Installer,False,startup,not_mentioned,1
+Financial Analyst,True,established,any_degree,3
+Financial Analyst,True,established,not_mentioned,3
+Financial Analyst,True,established,preferred,1
+Financial Analyst,True,established,required,1
+HVAC Technician,False,established,not_mentioned,6
+HVAC Technician,False,startup,not_mentioned,1
+Human Resources Manager,True,established,any_degree,2
+Human Resources Manager,True,established,no_degree,2
+Human Resources Manager,True,established,not_mentioned,6
+Human Resources Manager,True,startup,no_degree,1
+Human Resources Manager,True,startup,not_mentioned,5
+IT Systems Analyst,True,established,any_degree,3
+IT Systems Analyst,True,established,not_mentioned,4
+IT Systems Analyst,True,startup,not_mentioned,3
+Industrial Machinery Mechanic,False,established,no_degree,2
+Industrial Machinery Mechanic,False,established,not_mentioned,1
+Industrial Machinery Mechanic,False,established,required,1
+Investment Banking Analyst,True,established,any_degree,11
+Investment Banking Analyst,True,established,not_mentioned,14
+Investment Banking Analyst,True,established,preferred,1
+Investment Banking Analyst,True,startup,not_mentioned,3
+Machine Learning Engineer,True,established,any_degree,2
+Machine Learning Engineer,True,established,not_mentioned,3
+Machine Learning Engineer,True,startup,any_degree,5
+Machine Learning Engineer,True,startup,not_mentioned,20
+Machine Learning Engineer,True,startup,preferred,1
+Marketing Analyst,True,established,any_degree,3
+Marketing Analyst,True,established,no_degree,1
+Marketing Analyst,True,established,not_mentioned,13
+Marketing Analyst,True,established,preferred,1
+Marketing Analyst,True,startup,any_degree,1
+Marketing Analyst,True,startup,not_mentioned,1
+Medical Assistant,False,startup,not_mentioned,4
+Plumber,False,established,not_mentioned,3
+Registered Nurse,False,established,any_degree,11
+Registered Nurse,False,established,not_mentioned,3
+Social Worker,False,established,not_mentioned,2
+Software Engineer,True,established,any_degree,1
+Software Engineer,True,established,not_mentioned,2
+Software Engineer,True,startup,any_degree,2
+Software Engineer,True,startup,not_mentioned,13

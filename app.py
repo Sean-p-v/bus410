@@ -14,7 +14,7 @@ from plotly.subplots import make_subplots
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Work Force Development Economic Mobility - College majors and AI.",
+    page_title="College Scorecard Explorer",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -75,6 +75,34 @@ def load_bls_data():
 
 bls = load_bls_data()
 
+
+@st.cache_data
+def load_postings_data():
+    """Load job posting analysis outputs — returns empty frames if not yet scraped."""
+    import os
+    out = {
+        "enriched":   pd.DataFrame(),
+        "degree":     pd.DataFrame(),
+        "ai_anthro":  pd.DataFrame(),
+        "startup_deg":pd.DataFrame(),
+        "comp":       pd.DataFrame(),
+    }
+    file_map = {
+        "enriched":    "analysis_output/postings_enriched.csv",
+        "degree":      "analysis_output/degree_by_title.csv",
+        "ai_anthro":   "analysis_output/ai_vs_anthropic.csv",
+        "startup_deg": "analysis_output/startup_vs_established_degree.csv",
+        "comp":        "analysis_output/compensation_summary.csv",
+    }
+    for key, path in file_map.items():
+        if os.path.exists(path):
+            out[key] = pd.read_csv(path, low_memory=False)
+    return out
+
+
+postings = load_postings_data()
+postings_available = not postings["enriched"].empty
+
 # ── Sidebar filters ──────────────────────────────────────────────────────────
 st.sidebar.title("🎓 Filters")
 
@@ -114,7 +142,7 @@ if sel_states:
 filtered = df[mask].copy()
 
 # ── Header ───────────────────────────────────────────────────────────────────
-st.title("Work Force Development Economic Mobility - College majors and AI.")
+st.title("College Scorecard Explorer")
 st.caption(
     "Analyzing U.S. higher education outcomes across 6,500+ institutions · "
     "Data: U.S. Department of Education College Scorecard (2020–2024)"
@@ -131,8 +159,9 @@ k5.metric("Avg Completion Rate", f"{filtered['C150_4'].mean():.0%}" if filtered[
 st.markdown("---")
 
 # ── Tabs ─────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Overview", "💰 Earnings & ROI", "🎯 Admissions", "🗺️ Geographic", "🤖 AI Impact", "🔍 Institution Lookup"
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    "📊 Overview", "💰 Earnings & ROI", "🎯 Admissions", "🗺️ Geographic",
+    "🤖 AI Impact", "📋 Job Postings", "🔍 Institution Lookup"
 ])
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -733,9 +762,401 @@ with tab5:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 6: INSTITUTION LOOKUP
+# TAB 6: JOB POSTINGS ANALYSIS
 # ════════════════════════════════════════════════════════════════════════════
 with tab6:
+    st.header("Job Postings Analysis")
+    st.markdown(
+        "Real-world job posting data scraped from Indeed, LinkedIn & ZipRecruiter "
+        "for **20 job titles** (10 high AI exposure, 10 low AI exposure). "
+        "Answers: Are degrees being dropped? Do startups describe jobs differently? "
+        "Does Anthropic's exposure score match what employers actually ask for?"
+    )
+
+    if not postings_available:
+        st.warning(
+            "⚠️ Job posting data not found. Make sure the `analysis_output/` folder "
+            "is in the same directory as `app.py` and contains the CSV files from "
+            "`analyze_postings.py`."
+        )
+    else:
+        enr  = postings["enriched"]
+        deg  = postings["degree"]
+        aia  = postings["ai_anthro"]
+        sdeg = postings["startup_deg"]
+        comp = postings["comp"]
+
+        # ── KPI row ──────────────────────────────────────────────────────────
+        p1, p2, p3, p4, p5 = st.columns(5)
+        p1.metric("Total Postings",     f"{len(enr):,}")
+        p2.metric("Job Titles",         f"{enr['search_title'].nunique()}")
+        if "any_ai" in enr.columns:
+            p3.metric("Mention AI Tools",   f"{enr['any_ai'].mean():.0%}")
+        if "degree_requirement" in enr.columns:
+            no_deg = (enr["degree_requirement"].isin(["no_degree","not_mentioned"])).mean()
+            p4.metric("No Degree Mentioned", f"{no_deg:.0%}")
+        if "company_type" in enr.columns:
+            n_startup = (enr["company_type"] == "startup").sum()
+            p5.metric("Startup Postings",   f"{n_startup:,}")
+
+        st.markdown("---")
+
+        ptab1, ptab2, ptab3, ptab4 = st.tabs([
+            "🎓 Degree Requirements", "🤖 vs Anthropic", "🏢 Startup vs Established", "🔎 Explore"
+        ])
+
+        # ════════════════════════════════════════════════════════════════════
+        # P-TAB 1: DEGREE REQUIREMENTS
+        # ════════════════════════════════════════════════════════════════════
+        with ptab1:
+            st.subheader("Are Degree Requirements Declining?")
+
+            if not deg.empty:
+                # Order degree categories meaningfully
+                deg_order = ["required", "preferred", "any_degree", "no_degree", "not_mentioned", "unknown"]
+                deg["degree_requirement"] = pd.Categorical(
+                    deg["degree_requirement"], categories=deg_order, ordered=True
+                )
+                deg_sorted = deg.sort_values(["ai_exposed", "search_title", "degree_requirement"])
+
+                # Stacked bar: all titles, colored by degree requirement
+                deg_pct = (
+                    deg_sorted.groupby(["search_title", "ai_exposed", "degree_requirement"])["count"]
+                    .sum().reset_index()
+                )
+                totals = deg_pct.groupby("search_title")["count"].transform("sum")
+                deg_pct["pct"] = deg_pct["count"] / totals * 100
+
+                color_map = {
+                    "required":      "#E85D5D",
+                    "preferred":     "#F7C548",
+                    "any_degree":    "#667eea",
+                    "no_degree":     "#02C39A",
+                    "not_mentioned": "#B0BEC5",
+                    "unknown":       "#ECEFF1",
+                }
+
+                fig_deg = px.bar(
+                    deg_pct,
+                    x="pct", y="search_title", color="degree_requirement",
+                    orientation="h", barmode="stack",
+                    color_discrete_map=color_map,
+                    title="Degree Requirement Distribution by Job Title",
+                    labels={"pct": "% of Postings", "search_title": "",
+                            "degree_requirement": "Requirement"},
+                    category_orders={"degree_requirement": deg_order},
+                )
+                fig_deg.update_layout(
+                    height=600, legend=dict(orientation="h", y=-0.15),
+                    margin=dict(l=200), yaxis=dict(autorange="reversed"),
+                )
+                st.plotly_chart(fig_deg, use_container_width=True)
+
+                # AI-exposed vs not — summary comparison
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.subheader("High AI Exposure Jobs")
+                    hi = deg_pct[deg_pct["ai_exposed"] == True]
+                    hi_sum = hi.groupby("degree_requirement")["pct"].mean().reset_index()
+                    fig_hi = px.pie(
+                        hi_sum, names="degree_requirement", values="pct",
+                        color="degree_requirement", color_discrete_map=color_map,
+                        title="Avg Degree Requirement Mix (High AI)",
+                    )
+                    fig_hi.update_traces(textposition="inside", textinfo="percent+label")
+                    st.plotly_chart(fig_hi, use_container_width=True)
+
+                with col2:
+                    st.subheader("Low AI Exposure Jobs")
+                    lo = deg_pct[deg_pct["ai_exposed"] == False]
+                    lo_sum = lo.groupby("degree_requirement")["pct"].mean().reset_index()
+                    fig_lo = px.pie(
+                        lo_sum, names="degree_requirement", values="pct",
+                        color="degree_requirement", color_discrete_map=color_map,
+                        title="Avg Degree Requirement Mix (Low AI)",
+                    )
+                    fig_lo.update_traces(textposition="inside", textinfo="percent+label")
+                    st.plotly_chart(fig_lo, use_container_width=True)
+
+                # Key stat callout
+                if "any_degree" in deg_pct["degree_requirement"].values:
+                    hi_deg_pct = deg_pct[
+                        (deg_pct["ai_exposed"] == True) &
+                        (deg_pct["degree_requirement"].isin(["required","preferred","any_degree"]))
+                    ]["pct"].mean()
+                    lo_deg_pct = deg_pct[
+                        (deg_pct["ai_exposed"] == False) &
+                        (deg_pct["degree_requirement"].isin(["required","preferred","any_degree"]))
+                    ]["pct"].mean()
+                    diff = hi_deg_pct - lo_deg_pct
+                    direction = "more" if diff > 0 else "fewer"
+                    st.info(
+                        f"📌 High-AI-exposure jobs mention degree requirements in "
+                        f"**{hi_deg_pct:.0f}%** of postings vs **{lo_deg_pct:.0f}%** "
+                        f"for low-AI jobs — **{abs(diff):.0f} percentage points {direction}**."
+                    )
+
+        # ════════════════════════════════════════════════════════════════════
+        # P-TAB 2: VS ANTHROPIC
+        # ════════════════════════════════════════════════════════════════════
+        with ptab2:
+            st.subheader("Our Observed AI Mentions vs Anthropic's Exposure Scores")
+            st.caption(
+                "Compares the % of job postings that mention AI tools/skills "
+                "against Anthropic's theoretical and observed exposure scores from the "
+                "March 2026 Economic Index."
+            )
+
+            if not aia.empty:
+                aia_sorted = aia.sort_values("pct_ai_mentioned", ascending=True)
+
+                # Grouped bar: our observed vs Anthropic's observed vs theoretical
+                fig_comp = go.Figure()
+                fig_comp.add_trace(go.Bar(
+                    y=aia_sorted["search_title"],
+                    x=aia_sorted["anthropic_theoretical"],
+                    name="Anthropic: Theoretical (%)",
+                    orientation="h", marker_color="#667eea", opacity=0.5,
+                ))
+                fig_comp.add_trace(go.Bar(
+                    y=aia_sorted["search_title"],
+                    x=aia_sorted["anthropic_observed"],
+                    name="Anthropic: Observed (%)",
+                    orientation="h", marker_color="#667eea", opacity=0.85,
+                ))
+                fig_comp.add_trace(go.Bar(
+                    y=aia_sorted["search_title"],
+                    x=aia_sorted["pct_ai_mentioned"],
+                    name="Our Observed: AI Mentions in Postings (%)",
+                    orientation="h", marker_color="#02C39A", opacity=0.95,
+                ))
+                fig_comp.update_layout(
+                    barmode="overlay", height=600,
+                    xaxis_title="% Exposure / % Postings Mentioning AI",
+                    legend=dict(orientation="h", y=-0.15),
+                    margin=dict(l=220),
+                    title="AI Exposure: Anthropic Scores vs Job Posting Evidence",
+                )
+                st.plotly_chart(fig_comp, use_container_width=True)
+
+                # Scatter: Anthropic observed vs our observed
+                col1, col2 = st.columns(2)
+                with col1:
+                    fig_sc = px.scatter(
+                        aia,
+                        x="anthropic_observed", y="pct_ai_mentioned",
+                        text="search_title", color="ai_exposed",
+                        color_discrete_map={True: "#E85D5D", False: "#02C39A"},
+                        labels={
+                            "anthropic_observed": "Anthropic Observed Exposure (%)",
+                            "pct_ai_mentioned": "Our: AI Mentions in Postings (%)",
+                            "ai_exposed": "High AI Exposure",
+                        },
+                        title="Correlation: Anthropic vs Our Analysis",
+                    )
+                    fig_sc.update_traces(textposition="top center", textfont_size=9)
+                    # Add y=x reference line
+                    max_val = max(
+                        aia["anthropic_observed"].max(),
+                        aia["pct_ai_mentioned"].max()
+                    ) + 5
+                    fig_sc.add_trace(go.Scatter(
+                        x=[0, max_val], y=[0, max_val],
+                        mode="lines", name="Perfect agreement",
+                        line=dict(color="gray", dash="dash", width=1),
+                    ))
+                    st.plotly_chart(fig_sc, use_container_width=True)
+
+                with col2:
+                    # Table view
+                    aia_display = aia[[
+                        "search_title", "postings", "pct_ai_mentioned",
+                        "pct_ai_tools", "anthropic_observed", "anthropic_theoretical",
+                    ]].copy()
+                    aia_display.columns = [
+                        "Job Title", "Postings", "Our AI % ", "AI Tools %",
+                        "Anthropic Observed %", "Anthropic Theoretical %",
+                    ]
+                    aia_display["Gap (Ours - Anthropic)"] = (
+                        aia_display["Our AI % "] - aia_display["Anthropic Observed %"]
+                    ).round(1)
+                    aia_display = aia_display.sort_values("Our AI % ", ascending=False)
+                    st.dataframe(
+                        aia_display.reset_index(drop=True),
+                        use_container_width=True, height=500,
+                    )
+
+        # ════════════════════════════════════════════════════════════════════
+        # P-TAB 3: STARTUP VS ESTABLISHED
+        # ════════════════════════════════════════════════════════════════════
+        with ptab3:
+            st.subheader("Startup vs Established Companies")
+
+            if not sdeg.empty:
+                # Degree requirements: startup vs established
+                sv = sdeg[sdeg["company_type"].isin(["startup", "established"])].copy()
+                if not sv.empty:
+                    sv_totals = sv.groupby(["search_title","company_type"])["count"].transform("sum")
+                    sv["pct"] = sv["count"] / sv_totals * 100
+
+                    fig_sv = px.bar(
+                        sv[sv["degree_requirement"].isin(["required","preferred","no_degree","not_mentioned"])],
+                        x="pct", y="search_title", color="degree_requirement",
+                        facet_col="company_type",
+                        orientation="h", barmode="stack",
+                        color_discrete_map={
+                            "required": "#E85D5D", "preferred": "#F7C548",
+                            "no_degree": "#02C39A", "not_mentioned": "#B0BEC5",
+                        },
+                        title="Degree Requirements: Startup vs Established",
+                        labels={"pct": "% of Postings", "search_title": "",
+                                "degree_requirement": "Requirement"},
+                    )
+                    fig_sv.update_layout(
+                        height=600, margin=dict(l=200),
+                        yaxis=dict(autorange="reversed"),
+                        legend=dict(orientation="h", y=-0.15),
+                    )
+                    st.plotly_chart(fig_sv, use_container_width=True)
+
+            # AI mentions: startup vs established
+            if not enr.empty and "any_ai" in enr.columns and "company_type" in enr.columns:
+                ai_by_type = (
+                    enr[enr["company_type"].isin(["startup","established"])]
+                    .groupby(["search_title","ai_exposed","company_type"])["any_ai"]
+                    .agg(["mean","count"]).reset_index()
+                )
+                ai_by_type["mean"] *= 100
+                ai_by_type.rename(columns={"mean":"pct_ai","count":"n"}, inplace=True)
+
+                if not ai_by_type.empty:
+                    fig_ai_type = px.bar(
+                        ai_by_type,
+                        x="pct_ai", y="search_title", color="company_type",
+                        barmode="group", orientation="h",
+                        color_discrete_map={"startup":"#F7C548","established":"#065A82"},
+                        title="AI Skill Mentions: Startup vs Established",
+                        labels={"pct_ai": "% Postings Mentioning AI",
+                                "search_title": "", "company_type": "Company Type"},
+                    )
+                    fig_ai_type.update_layout(
+                        height=580, margin=dict(l=200),
+                        yaxis=dict(autorange="reversed"),
+                        legend=dict(orientation="h", y=-0.15),
+                    )
+                    st.plotly_chart(fig_ai_type, use_container_width=True)
+
+            # Compensation comparison
+            if not comp.empty:
+                st.subheader("Compensation: Startup vs Established")
+                comp_sv = comp[comp["company_type"].isin(["startup","established"])].dropna(subset=["avg_salary_min"])
+                if not comp_sv.empty:
+                    fig_sal = px.bar(
+                        comp_sv,
+                        x="avg_salary_min", y="search_title", color="company_type",
+                        barmode="group", orientation="h",
+                        color_discrete_map={"startup":"#F7C548","established":"#065A82"},
+                        title="Average Minimum Salary: Startup vs Established ($)",
+                        labels={"avg_salary_min":"Avg Min Salary ($)",
+                                "search_title":"","company_type":"Company Type"},
+                    )
+                    fig_sal.update_layout(
+                        height=500, margin=dict(l=200),
+                        yaxis=dict(autorange="reversed"),
+                        legend=dict(orientation="h", y=-0.15),
+                    )
+                    st.plotly_chart(fig_sal, use_container_width=True)
+
+        # ════════════════════════════════════════════════════════════════════
+        # P-TAB 4: EXPLORE
+        # ════════════════════════════════════════════════════════════════════
+        with ptab4:
+            st.subheader("Explore Postings")
+
+            if not enr.empty:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    sel_title = st.multiselect(
+                        "Job Title", sorted(enr["search_title"].unique()), default=[]
+                    )
+                with col2:
+                    sel_deg_req = st.multiselect(
+                        "Degree Requirement",
+                        sorted(enr["degree_requirement"].dropna().unique()) if "degree_requirement" in enr.columns else [],
+                        default=[],
+                    )
+                with col3:
+                    sel_co_type = st.multiselect(
+                        "Company Type",
+                        ["startup", "established", "mixed", "unknown"],
+                        default=[],
+                    )
+
+                explore = enr.copy()
+                if sel_title:
+                    explore = explore[explore["search_title"].isin(sel_title)]
+                if sel_deg_req:
+                    explore = explore[explore["degree_requirement"].isin(sel_deg_req)]
+                if sel_co_type and "company_type" in explore.columns:
+                    explore = explore[explore["company_type"].isin(sel_co_type)]
+
+                st.caption(f"Showing {len(explore):,} postings")
+
+                # Choose display columns that actually exist
+                possible_cols = [
+                    "search_title", "ai_exposed", "title", "company", "location",
+                    "date_posted", "degree_requirement", "any_ai", "company_type",
+                    "min_yoe", "salary_min", "salary_max",
+                ]
+                show_cols = [c for c in possible_cols if c in explore.columns]
+                rename_map = {
+                    "search_title": "Target Title", "ai_exposed": "High AI",
+                    "title": "Posted Title", "company": "Company",
+                    "location": "Location", "date_posted": "Date",
+                    "degree_requirement": "Degree Req.", "any_ai": "AI Mention",
+                    "company_type": "Co. Type", "min_yoe": "Min YoE",
+                    "salary_min": "Salary Min", "salary_max": "Salary Max",
+                }
+                st.dataframe(
+                    explore[show_cols].rename(columns=rename_map).reset_index(drop=True),
+                    use_container_width=True, height=500,
+                )
+
+                # Word frequency in descriptions for selected subset
+                if "description_text" in explore.columns and len(explore) > 0:
+                    st.subheader("Top Skills Mentioned")
+                    from collections import Counter
+                    import re as _re
+                    skill_keywords = [
+                        "python","sql","excel","tableau","power bi","machine learning",
+                        "ai","data analysis","project management","communication",
+                        "leadership","agile","scrum","java","javascript","cloud",
+                        "aws","azure","r programming","statistics","finance",
+                        "accounting","healthcare","electrical","hvac","plumbing",
+                    ]
+                    all_text = " ".join(explore["description_text"].fillna("").str.lower())
+                    counts = {kw: len(_re.findall(r'\b' + kw.replace(" ", r'\s+') + r'\b', all_text))
+                              for kw in skill_keywords}
+                    skill_df = pd.DataFrame(
+                        sorted(counts.items(), key=lambda x: -x[1]),
+                        columns=["Skill", "Mentions"]
+                    ).head(15)
+                    fig_skills = px.bar(
+                        skill_df, x="Mentions", y="Skill", orientation="h",
+                        color="Mentions", color_continuous_scale="Teal",
+                        title="Most Mentioned Skills in Selected Postings",
+                    )
+                    fig_skills.update_layout(
+                        height=450, showlegend=False,
+                        yaxis=dict(autorange="reversed"),
+                    )
+                    st.plotly_chart(fig_skills, use_container_width=True)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TAB 7: INSTITUTION LOOKUP
+# ════════════════════════════════════════════════════════════════════════════
+with tab7:
     st.header("Institution Lookup")
 
     search = st.text_input("Search for an institution:", placeholder="e.g. University of San Francisco")
