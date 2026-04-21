@@ -1454,10 +1454,13 @@ with tab8:
                         columns={**rename_signals, title_col: "Job Title"}
                     )
                     st.dataframe(
-                        display_dis.style.background_gradient(
-                            subset=["Composite Score"], cmap="RdYlGn_r"
-                        ),
+                        display_dis.reset_index(drop=True),
                         use_container_width=True,
+                        column_config={
+                            "Composite Score": st.column_config.ProgressColumn(
+                                "Composite Score", min_value=0, max_value=100, format="%.1f"
+                            )
+                        }
                     )
 
         # ── MODEL 1: Degree Predictions ───────────────────────────────────────
