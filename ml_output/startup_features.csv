@@ -1,0 +1,36 @@
+feature,startup_avg,established_avg,difference,favors
+AI mention,0.778,0.492,0.286,Startup
+Specific AI tools,0.32,0.141,0.179,Startup
+Min years experience,5.139,8.009,-2.87,Established
+Min salary ($),162159.085,125734.273,36424.813,Startup
+Degree required,0.182,0.359,-0.177,Established
+"""startup"" (text)",5.559,0.0,5.559,Startup
+"""fast"" (text)",2.435,0.0,2.435,Startup
+"""clinical"" (text)",1.879,0.0,1.879,Startup
+"""systems"" (text)",1.768,0.0,1.768,Startup
+"""role"" (text)",1.614,0.0,1.614,Startup
+"""mission"" (text)",1.582,0.0,1.582,Startup
+"""team"" (text)",1.514,0.0,1.514,Startup
+"""new"" (text)",1.514,0.0,1.514,Startup
+"""infrastructure"" (text)",1.442,0.0,1.442,Startup
+"""looking"" (text)",1.427,0.0,1.427,Startup
+"""building"" (text)",1.349,0.0,1.349,Startup
+"""finance"" (text)",1.296,0.0,1.296,Startup
+"""research"" (text)",1.293,0.0,1.293,Startup
+"""experience"" (text)",1.289,0.0,1.289,Startup
+"""product"" (text)",1.237,0.0,1.237,Startup
+"""pbs"" (text)",0.0,3.367,-3.367,Established
+"""management"" (text)",0.0,1.96,-1.96,Established
+"""global"" (text)",0.0,1.705,-1.705,Established
+"""00"" (text)",0.0,1.67,-1.67,Established
+"""clients"" (text)",0.0,1.665,-1.665,Established
+"""financial"" (text)",0.0,1.611,-1.611,Established
+"""aws"" (text)",0.0,1.595,-1.595,Established
+"""solutions"" (text)",0.0,1.42,-1.42,Established
+"""credit"" (text)",0.0,1.341,-1.341,Established
+"""life"" (text)",0.0,1.334,-1.334,Established
+"""com"" (text)",0.0,1.32,-1.32,Established
+"""professional"" (text)",0.0,1.268,-1.268,Established
+"""knowledge"" (text)",0.0,1.261,-1.261,Established
+"""range"" (text)",0.0,1.247,-1.247,Established
+"""required"" (text)",0.0,1.15,-1.15,Established

@@ -1,0 +1,4 @@
+model,metric,cv_mean,cv_std
+Degree Classifier (RF),F1 (weighted),0.613,0.009
+AI Adoption Predictor (LR),AUC,0.839,0.003
+Startup Differentiator (TF-IDF + LR),AUC,0.885,0.019

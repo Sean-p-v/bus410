@@ -1,0 +1,31 @@
+job_title,industry,ai_exposed,prob_ai_in_postings,actual_pct_ai,anthropic_observed,anthropic_theoretical,gap_vs_anthropic
+AI Research Scientist,Technology,True,83.6,99.8,42.3,96.8,57.5
+Actuary,Finance,True,79.5,46.6,31.8,95.2,14.8
+Data Scientist,Technology,True,78.1,96.2,33.0,94.3,63.2
+Machine Learning Engineer,Technology,True,76.2,98.3,38.5,96.1,59.8
+Cloud Architect,Technology,True,75.1,87.1,30.6,91.2,56.5
+Full Stack Developer,Technology,True,75.1,81.4,33.0,94.3,48.4
+Financial Analyst,Finance,True,74.9,56.5,27.5,94.3,29.0
+Credit Analyst,Finance,True,73.1,36.4,23.4,90.8,13.0
+Investment Banking Analyst,Finance,True,72.1,46.2,27.5,94.3,18.7
+Compliance Officer,Finance,True,71.8,36.5,21.3,89.6,15.2
+DevOps Engineer,Technology,True,71.6,93.8,31.2,90.5,62.6
+Fintech Product Manager,Finance,True,70.5,73.3,26.7,90.3,46.6
+Quantitative Analyst,Finance,True,70.5,58.1,35.2,96.5,22.9
+Cybersecurity Analyst,Technology,True,70.2,78.3,28.4,88.7,49.9
+Portfolio Manager,Finance,True,68.4,34.8,29.1,93.4,5.7
+Software Engineer,Technology,True,68.4,84.5,33.0,94.3,51.5
+Financial Planner,Finance,True,67.3,22.7,22.6,91.0,0.1
+Risk Manager,Finance,True,64.4,48.4,24.8,92.1,23.6
+Product Manager,Technology,True,62.6,71.2,24.8,87.4,46.4
+UX Designer,Technology,True,51.8,72.0,19.6,82.1,52.4
+Health Informatics Specialist,Healthcare,False,33.3,46.7,20.1,88.2,26.6
+Medical Data Analyst,Healthcare,False,31.5,42.5,22.5,89.4,20.0
+Healthcare Administrator,Healthcare,False,22.0,28.0,15.7,83.5,12.3
+Clinical Research Coordinator,Healthcare,False,21.8,6.5,12.4,78.6,-5.9
+Biomedical Engineer,Healthcare,False,18.2,30.3,11.2,71.3,19.1
+Physician,Healthcare,False,13.0,5.0,9.8,72.1,-4.8
+Registered Nurse,Healthcare,False,6.1,2.5,7.2,65.4,-4.7
+Pharmacist,Healthcare,False,5.7,7.7,8.6,60.9,-0.9
+Physical Therapist,Healthcare,False,3.8,6.8,5.3,54.8,1.5
+Radiologic Technologist,Healthcare,False,2.2,15.1,4.1,48.2,11.0
