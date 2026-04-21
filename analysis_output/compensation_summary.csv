@@ -1,0 +1,111 @@
+industry,search_title,company_type,avg_min_yoe,avg_salary_min,avg_salary_max,postings
+Finance,Actuary,established,1.0,143125.0,194875.0,6
+Finance,Actuary,startup,,116000.0,141000.0,4
+Finance,Actuary,unknown,4.615384615384615,122144.75806451614,183830.0483870968,93
+Finance,Compliance Officer,established,4.0,170666.66666666666,200500.0,4
+Finance,Compliance Officer,mixed,,205000.0,275000.0,2
+Finance,Compliance Officer,startup,5.0,223500.0,285950.0,7
+Finance,Compliance Officer,unknown,5.133333333333334,141223.3,204527.46666666667,102
+Finance,Credit Analyst,established,4.375,114110.14634146342,194591.1219512195,60
+Finance,Credit Analyst,mixed,,170000.0,200000.0,2
+Finance,Credit Analyst,startup,7.6,161875.0,203125.0,18
+Finance,Credit Analyst,unknown,6.153846153846154,119297.83647798742,167792.6855345912,252
+Finance,Financial Analyst,established,4.75,106620.71428571429,144059.89285714287,38
+Finance,Financial Analyst,mixed,10.0,132053.66666666666,162003.0,3
+Finance,Financial Analyst,startup,5.5,138241.66666666666,169050.0,40
+Finance,Financial Analyst,unknown,4.831460674157303,117922.24542124542,171664.30036630036,406
+Finance,Financial Planner,established,33.23076923076923,97042.78378378379,143243.75675675675,50
+Finance,Financial Planner,startup,6.0,103000.0,143150.0,8
+Finance,Financial Planner,unknown,9.0,91150.53403141361,156148.01047120418,418
+Finance,Fintech Product Manager,established,4.0,167364.6551724138,254982.6551724138,50
+Finance,Fintech Product Manager,mixed,4.5,180700.0,220900.0,10
+Finance,Fintech Product Manager,startup,7.25,171574.24528301886,228340.679245283,129
+Finance,Fintech Product Manager,unknown,5.7317073170731705,163963.5632183908,229663.03831417626,518
+Finance,Investment Banking Analyst,established,3.6,107610.52631578948,142410.52631578947,29
+Finance,Investment Banking Analyst,startup,5.375,154562.5,207775.0,17
+Finance,Investment Banking Analyst,unknown,3.4242424242424243,114848.98701298701,151497.33766233767,138
+Finance,Portfolio Manager,established,9.5,127890.31578947368,195037.31578947368,24
+Finance,Portfolio Manager,mixed,18.0,120050.0,198950.0,7
+Finance,Portfolio Manager,startup,15.0,233250.0,279250.0,13
+Finance,Portfolio Manager,unknown,5.609756097560975,133375.2389380531,197635.38053097346,177
+Finance,Quantitative Analyst,established,3.857142857142857,94540.69444444444,151044.55555555556,58
+Finance,Quantitative Analyst,mixed,,107032.25,121855.5,6
+Finance,Quantitative Analyst,startup,4.833333333333333,134294.94594594595,196121.24324324325,71
+Finance,Quantitative Analyst,unknown,5.106060606060606,121416.50554323725,177673.81818181818,770
+Finance,Risk Manager,established,6.5,111126.53571428571,163805.0357142857,47
+Finance,Risk Manager,mixed,,161000.0,237000.0,4
+Finance,Risk Manager,startup,9.5,159520.0,245760.0,22
+Finance,Risk Manager,unknown,6.064516129032258,137031.125,218179.99537037036,338
+Healthcare,Biomedical Engineer,established,,108466.66666666667,134633.33333333334,5
+Healthcare,Biomedical Engineer,mixed,,75029.0,104322.0,3
+Healthcare,Biomedical Engineer,startup,2.0,154641.66666666666,210816.66666666666,11
+Healthcare,Biomedical Engineer,unknown,6.0,130027.9247311828,205888.36559139786,146
+Healthcare,Clinical Research Coordinator,established,4.0,82900.0,130950.0,7
+Healthcare,Clinical Research Coordinator,startup,,,,23
+Healthcare,Clinical Research Coordinator,unknown,2.6,104281.05172413793,138083.8448275862,231
+Healthcare,Health Informatics Specialist,established,,118200.0,165300.0,3
+Healthcare,Health Informatics Specialist,startup,,,,1
+Healthcare,Health Informatics Specialist,unknown,2.0,109224.375,160570.625,11
+Healthcare,Healthcare Administrator,established,,80435.2,110772.93333333333,31
+Healthcare,Healthcare Administrator,mixed,,75029.0,104322.0,2
+Healthcare,Healthcare Administrator,startup,3.5,120857.14285714286,162857.14285714287,25
+Healthcare,Healthcare Administrator,unknown,4.857142857142857,108232.35,150796.61666666667,603
+Healthcare,Medical Data Analyst,established,9.88888888888889,107196.15,168825.65,265
+Healthcare,Medical Data Analyst,mixed,,89000.0,120000.0,6
+Healthcare,Medical Data Analyst,startup,5.636363636363637,131675.0,164709.52380952382,90
+Healthcare,Medical Data Analyst,unknown,4.98,125775.05225653207,194761.3372921615,675
+Healthcare,Pharmacist,established,1.0,111953.0,162965.33333333334,54
+Healthcare,Pharmacist,startup,,,,4
+Healthcare,Pharmacist,unknown,2.111111111111111,165827.41666666666,208094.16666666666,320
+Healthcare,Physical Therapist,established,2.0,,,6
+Healthcare,Physical Therapist,startup,,180000.0,200000.0,17
+Healthcare,Physical Therapist,unknown,2.1607142857142856,100499.5,130695.03278688525,970
+Healthcare,Physician,established,,194631.2857142857,245418.0,24
+Healthcare,Physician,startup,,273333.3333333333,316666.6666666667,114
+Healthcare,Physician,unknown,5.555555555555555,213463.13409961684,305796.7509578544,821
+Healthcare,Radiologic Technologist,established,2.6666666666666665,,,14
+Healthcare,Radiologic Technologist,startup,,94227.33333333333,126362.0,4
+Healthcare,Radiologic Technologist,unknown,3.108695652173913,126864.3,194222.2,580
+Healthcare,Registered Nurse,established,,111000.0,133333.33333333334,19
+Healthcare,Registered Nurse,startup,7.0,115000.0,145000.0,4
+Healthcare,Registered Nurse,unknown,5.773584905660377,139168.14141414143,180835.22222222222,1114
+Technology,AI Research Scientist,established,3.0,152586.36363636365,218366.36363636365,48
+Technology,AI Research Scientist,mixed,,139670.0,225927.5,7
+Technology,AI Research Scientist,startup,3.0,165311.3875,285457.3125,162
+Technology,AI Research Scientist,unknown,4.038759689922481,173906.4469096672,271702.47543581616,921
+Technology,Cloud Architect,established,4.6,145816.66666666666,246300.0,41
+Technology,Cloud Architect,mixed,,180000.0,200000.0,11
+Technology,Cloud Architect,startup,8.0,207623.5294117647,265523.5294117647,33
+Technology,Cloud Architect,unknown,5.099009900990099,156652.8511627907,270149.2418604651,334
+Technology,Cybersecurity Analyst,established,5.0,130055.55555555556,187455.55555555556,22
+Technology,Cybersecurity Analyst,mixed,,,,4
+Technology,Cybersecurity Analyst,startup,5.666666666666667,194163.125,256706.25,24
+Technology,Cybersecurity Analyst,unknown,8.5,141013.13571428572,211089.62857142856,217
+Technology,Data Scientist,established,3.2,158990.0,231341.66666666666,34
+Technology,Data Scientist,mixed,,,,3
+Technology,Data Scientist,startup,2.5833333333333335,163209.0,249367.66666666666,108
+Technology,Data Scientist,unknown,3.6142857142857143,163136.55661664394,267265.6957708049,999
+Technology,DevOps Engineer,established,8.0,167310.0,212350.0,22
+Technology,DevOps Engineer,mixed,,163300.0,208050.0,7
+Technology,DevOps Engineer,startup,5.0,165315.0,237235.625,55
+Technology,DevOps Engineer,unknown,4.744186046511628,146981.35714285713,231113.19047619047,241
+Technology,Full Stack Developer,established,6.166666666666667,129512.76190476191,189400.0,31
+Technology,Full Stack Developer,mixed,5.0,144040.0,177040.0,15
+Technology,Full Stack Developer,startup,5.0,144608.47826086957,224069.95652173914,177
+Technology,Full Stack Developer,unknown,3.230769230769231,153517.72491909386,235278.83171521037,561
+Technology,Machine Learning Engineer,established,6.0,140554.0,202510.0,54
+Technology,Machine Learning Engineer,mixed,,146462.5,217437.5,4
+Technology,Machine Learning Engineer,startup,4.1,167256.05263157896,257669.73684210525,101
+Technology,Machine Learning Engineer,unknown,4.158878504672897,164728.34322033898,275448.6101694915,979
+Technology,Product Manager,established,6.75,148032.35294117648,220905.88235294117,58
+Technology,Product Manager,mixed,4.0,176400.0,226800.0,8
+Technology,Product Manager,startup,5.153846153846154,171679.34782608695,224117.6739130435,125
+Technology,Product Manager,unknown,4.847161572052402,163659.0210970464,248979.76793248946,947
+Technology,Software Engineer,established,1.3333333333333333,133221.9,207513.33333333334,61
+Technology,Software Engineer,mixed,5.0,159806.25,234093.75,17
+Technology,Software Engineer,startup,3.3333333333333335,165841.37288135593,252034.57627118644,161
+Technology,Software Engineer,unknown,2.638036809815951,157571.7537688442,242724.91122278056,900
+Technology,UX Designer,established,,176285.25,270613.4375,19
+Technology,UX Designer,mixed,5.0,171507.0,230127.0,7
+Technology,UX Designer,startup,4.833333333333333,177955.0,233718.33333333334,89
+Technology,UX Designer,unknown,3.9,155993.908,228544.612,349

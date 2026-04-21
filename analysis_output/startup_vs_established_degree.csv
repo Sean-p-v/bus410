@@ -1,0 +1,179 @@
+industry,search_title,company_type,degree_requirement,count
+Finance,Actuary,established,any_degree,2
+Finance,Actuary,established,not_mentioned,2
+Finance,Actuary,established,preferred,1
+Finance,Actuary,established,required,1
+Finance,Actuary,startup,not_mentioned,4
+Finance,Compliance Officer,established,not_mentioned,3
+Finance,Compliance Officer,established,preferred,1
+Finance,Compliance Officer,startup,not_mentioned,6
+Finance,Compliance Officer,startup,required,1
+Finance,Credit Analyst,established,any_degree,21
+Finance,Credit Analyst,established,no_degree,3
+Finance,Credit Analyst,established,not_mentioned,19
+Finance,Credit Analyst,established,preferred,13
+Finance,Credit Analyst,established,required,4
+Finance,Credit Analyst,startup,any_degree,3
+Finance,Credit Analyst,startup,not_mentioned,13
+Finance,Credit Analyst,startup,preferred,1
+Finance,Credit Analyst,startup,required,1
+Finance,Financial Analyst,established,any_degree,11
+Finance,Financial Analyst,established,no_degree,1
+Finance,Financial Analyst,established,not_mentioned,21
+Finance,Financial Analyst,established,required,5
+Finance,Financial Analyst,startup,any_degree,9
+Finance,Financial Analyst,startup,not_mentioned,29
+Finance,Financial Analyst,startup,preferred,1
+Finance,Financial Analyst,startup,required,1
+Finance,Financial Planner,established,any_degree,9
+Finance,Financial Planner,established,not_mentioned,24
+Finance,Financial Planner,established,preferred,15
+Finance,Financial Planner,established,required,2
+Finance,Financial Planner,startup,not_mentioned,8
+Finance,Fintech Product Manager,established,any_degree,7
+Finance,Fintech Product Manager,established,no_degree,10
+Finance,Fintech Product Manager,established,not_mentioned,31
+Finance,Fintech Product Manager,established,preferred,2
+Finance,Fintech Product Manager,startup,any_degree,12
+Finance,Fintech Product Manager,startup,no_degree,2
+Finance,Fintech Product Manager,startup,not_mentioned,111
+Finance,Fintech Product Manager,startup,preferred,1
+Finance,Fintech Product Manager,startup,required,3
+Finance,Investment Banking Analyst,established,any_degree,10
+Finance,Investment Banking Analyst,established,not_mentioned,14
+Finance,Investment Banking Analyst,established,preferred,1
+Finance,Investment Banking Analyst,established,required,4
+Finance,Investment Banking Analyst,startup,any_degree,4
+Finance,Investment Banking Analyst,startup,not_mentioned,12
+Finance,Investment Banking Analyst,startup,preferred,1
+Finance,Portfolio Manager,established,any_degree,8
+Finance,Portfolio Manager,established,not_mentioned,12
+Finance,Portfolio Manager,established,preferred,2
+Finance,Portfolio Manager,established,required,2
+Finance,Portfolio Manager,startup,any_degree,2
+Finance,Portfolio Manager,startup,not_mentioned,6
+Finance,Portfolio Manager,startup,preferred,4
+Finance,Portfolio Manager,startup,required,1
+Finance,Quantitative Analyst,established,any_degree,12
+Finance,Quantitative Analyst,established,no_degree,2
+Finance,Quantitative Analyst,established,not_mentioned,35
+Finance,Quantitative Analyst,established,preferred,3
+Finance,Quantitative Analyst,established,required,6
+Finance,Quantitative Analyst,startup,any_degree,10
+Finance,Quantitative Analyst,startup,no_degree,1
+Finance,Quantitative Analyst,startup,not_mentioned,54
+Finance,Quantitative Analyst,startup,preferred,6
+Finance,Risk Manager,established,any_degree,11
+Finance,Risk Manager,established,no_degree,4
+Finance,Risk Manager,established,not_mentioned,19
+Finance,Risk Manager,established,preferred,13
+Finance,Risk Manager,startup,any_degree,5
+Finance,Risk Manager,startup,not_mentioned,15
+Finance,Risk Manager,startup,required,2
+Healthcare,Biomedical Engineer,established,any_degree,2
+Healthcare,Biomedical Engineer,established,no_degree,1
+Healthcare,Biomedical Engineer,established,not_mentioned,2
+Healthcare,Biomedical Engineer,startup,any_degree,4
+Healthcare,Biomedical Engineer,startup,not_mentioned,7
+Healthcare,Clinical Research Coordinator,established,any_degree,3
+Healthcare,Clinical Research Coordinator,established,not_mentioned,4
+Healthcare,Clinical Research Coordinator,startup,any_degree,17
+Healthcare,Clinical Research Coordinator,startup,not_mentioned,6
+Healthcare,Health Informatics Specialist,established,any_degree,2
+Healthcare,Health Informatics Specialist,established,preferred,1
+Healthcare,Health Informatics Specialist,startup,any_degree,1
+Healthcare,Healthcare Administrator,established,any_degree,1
+Healthcare,Healthcare Administrator,established,not_mentioned,28
+Healthcare,Healthcare Administrator,established,preferred,2
+Healthcare,Healthcare Administrator,startup,any_degree,5
+Healthcare,Healthcare Administrator,startup,not_mentioned,17
+Healthcare,Healthcare Administrator,startup,preferred,3
+Healthcare,Medical Data Analyst,established,any_degree,84
+Healthcare,Medical Data Analyst,established,no_degree,5
+Healthcare,Medical Data Analyst,established,not_mentioned,156
+Healthcare,Medical Data Analyst,established,preferred,15
+Healthcare,Medical Data Analyst,established,required,5
+Healthcare,Medical Data Analyst,startup,any_degree,16
+Healthcare,Medical Data Analyst,startup,no_degree,1
+Healthcare,Medical Data Analyst,startup,not_mentioned,71
+Healthcare,Medical Data Analyst,startup,required,2
+Healthcare,Pharmacist,established,any_degree,18
+Healthcare,Pharmacist,established,not_mentioned,36
+Healthcare,Pharmacist,startup,not_mentioned,4
+Healthcare,Physical Therapist,established,not_mentioned,6
+Healthcare,Physical Therapist,startup,not_mentioned,17
+Healthcare,Physician,established,not_mentioned,24
+Healthcare,Physician,startup,not_mentioned,114
+Healthcare,Radiologic Technologist,established,not_mentioned,14
+Healthcare,Radiologic Technologist,startup,not_mentioned,4
+Healthcare,Registered Nurse,established,any_degree,7
+Healthcare,Registered Nurse,established,not_mentioned,11
+Healthcare,Registered Nurse,established,preferred,1
+Healthcare,Registered Nurse,startup,not_mentioned,4
+Technology,AI Research Scientist,established,any_degree,12
+Technology,AI Research Scientist,established,no_degree,2
+Technology,AI Research Scientist,established,not_mentioned,33
+Technology,AI Research Scientist,established,preferred,1
+Technology,AI Research Scientist,startup,any_degree,26
+Technology,AI Research Scientist,startup,no_degree,6
+Technology,AI Research Scientist,startup,not_mentioned,129
+Technology,AI Research Scientist,startup,preferred,1
+Technology,Cloud Architect,established,any_degree,8
+Technology,Cloud Architect,established,no_degree,4
+Technology,Cloud Architect,established,not_mentioned,26
+Technology,Cloud Architect,established,preferred,3
+Technology,Cloud Architect,startup,any_degree,11
+Technology,Cloud Architect,startup,not_mentioned,21
+Technology,Cloud Architect,startup,preferred,1
+Technology,Cybersecurity Analyst,established,any_degree,6
+Technology,Cybersecurity Analyst,established,not_mentioned,16
+Technology,Cybersecurity Analyst,startup,any_degree,2
+Technology,Cybersecurity Analyst,startup,no_degree,1
+Technology,Cybersecurity Analyst,startup,not_mentioned,21
+Technology,Data Scientist,established,any_degree,6
+Technology,Data Scientist,established,no_degree,3
+Technology,Data Scientist,established,not_mentioned,25
+Technology,Data Scientist,startup,any_degree,14
+Technology,Data Scientist,startup,no_degree,3
+Technology,Data Scientist,startup,not_mentioned,88
+Technology,Data Scientist,startup,preferred,3
+Technology,DevOps Engineer,established,no_degree,2
+Technology,DevOps Engineer,established,not_mentioned,20
+Technology,DevOps Engineer,startup,any_degree,7
+Technology,DevOps Engineer,startup,no_degree,2
+Technology,DevOps Engineer,startup,not_mentioned,45
+Technology,DevOps Engineer,startup,preferred,1
+Technology,Full Stack Developer,established,any_degree,4
+Technology,Full Stack Developer,established,not_mentioned,27
+Technology,Full Stack Developer,startup,any_degree,30
+Technology,Full Stack Developer,startup,no_degree,1
+Technology,Full Stack Developer,startup,not_mentioned,144
+Technology,Full Stack Developer,startup,preferred,2
+Technology,Machine Learning Engineer,established,any_degree,20
+Technology,Machine Learning Engineer,established,not_mentioned,34
+Technology,Machine Learning Engineer,startup,any_degree,21
+Technology,Machine Learning Engineer,startup,no_degree,4
+Technology,Machine Learning Engineer,startup,not_mentioned,73
+Technology,Machine Learning Engineer,startup,preferred,3
+Technology,Product Manager,established,any_degree,14
+Technology,Product Manager,established,no_degree,1
+Technology,Product Manager,established,not_mentioned,37
+Technology,Product Manager,established,preferred,4
+Technology,Product Manager,established,required,2
+Technology,Product Manager,startup,any_degree,21
+Technology,Product Manager,startup,no_degree,2
+Technology,Product Manager,startup,not_mentioned,98
+Technology,Product Manager,startup,preferred,4
+Technology,Software Engineer,established,any_degree,28
+Technology,Software Engineer,established,no_degree,1
+Technology,Software Engineer,established,not_mentioned,31
+Technology,Software Engineer,established,preferred,1
+Technology,Software Engineer,startup,any_degree,27
+Technology,Software Engineer,startup,no_degree,3
+Technology,Software Engineer,startup,not_mentioned,126
+Technology,Software Engineer,startup,preferred,5
+Technology,UX Designer,established,any_degree,9
+Technology,UX Designer,established,not_mentioned,10
+Technology,UX Designer,startup,any_degree,4
+Technology,UX Designer,startup,not_mentioned,82
+Technology,UX Designer,startup,preferred,3

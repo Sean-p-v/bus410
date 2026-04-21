@@ -1,0 +1,136 @@
+industry,search_title,degree_requirement,count
+Finance,Actuary,any_degree,42
+Finance,Actuary,no_degree,4
+Finance,Actuary,not_mentioned,53
+Finance,Actuary,preferred,3
+Finance,Actuary,required,1
+Finance,Compliance Officer,any_degree,28
+Finance,Compliance Officer,no_degree,5
+Finance,Compliance Officer,not_mentioned,73
+Finance,Compliance Officer,preferred,6
+Finance,Compliance Officer,required,3
+Finance,Credit Analyst,any_degree,91
+Finance,Credit Analyst,no_degree,15
+Finance,Credit Analyst,not_mentioned,192
+Finance,Credit Analyst,preferred,27
+Finance,Credit Analyst,required,7
+Finance,Financial Analyst,any_degree,168
+Finance,Financial Analyst,no_degree,18
+Finance,Financial Analyst,not_mentioned,283
+Finance,Financial Analyst,preferred,9
+Finance,Financial Analyst,required,9
+Finance,Financial Planner,any_degree,119
+Finance,Financial Planner,no_degree,10
+Finance,Financial Planner,not_mentioned,284
+Finance,Financial Planner,preferred,57
+Finance,Financial Planner,required,6
+Finance,Fintech Product Manager,any_degree,118
+Finance,Fintech Product Manager,no_degree,38
+Finance,Fintech Product Manager,not_mentioned,523
+Finance,Fintech Product Manager,preferred,16
+Finance,Fintech Product Manager,required,12
+Finance,Investment Banking Analyst,any_degree,60
+Finance,Investment Banking Analyst,no_degree,1
+Finance,Investment Banking Analyst,not_mentioned,111
+Finance,Investment Banking Analyst,preferred,6
+Finance,Investment Banking Analyst,required,6
+Finance,Portfolio Manager,any_degree,62
+Finance,Portfolio Manager,no_degree,8
+Finance,Portfolio Manager,not_mentioned,120
+Finance,Portfolio Manager,preferred,24
+Finance,Portfolio Manager,required,7
+Finance,Quantitative Analyst,any_degree,245
+Finance,Quantitative Analyst,no_degree,34
+Finance,Quantitative Analyst,not_mentioned,565
+Finance,Quantitative Analyst,preferred,49
+Finance,Quantitative Analyst,required,12
+Finance,Risk Manager,any_degree,113
+Finance,Risk Manager,no_degree,16
+Finance,Risk Manager,not_mentioned,233
+Finance,Risk Manager,preferred,42
+Finance,Risk Manager,required,7
+Healthcare,Biomedical Engineer,any_degree,64
+Healthcare,Biomedical Engineer,no_degree,5
+Healthcare,Biomedical Engineer,not_mentioned,80
+Healthcare,Biomedical Engineer,preferred,15
+Healthcare,Biomedical Engineer,required,1
+Healthcare,Clinical Research Coordinator,any_degree,103
+Healthcare,Clinical Research Coordinator,no_degree,10
+Healthcare,Clinical Research Coordinator,not_mentioned,135
+Healthcare,Clinical Research Coordinator,preferred,13
+Healthcare,Health Informatics Specialist,any_degree,8
+Healthcare,Health Informatics Specialist,not_mentioned,5
+Healthcare,Health Informatics Specialist,preferred,2
+Healthcare,Healthcare Administrator,any_degree,128
+Healthcare,Healthcare Administrator,no_degree,19
+Healthcare,Healthcare Administrator,not_mentioned,462
+Healthcare,Healthcare Administrator,preferred,42
+Healthcare,Healthcare Administrator,required,10
+Healthcare,Medical Data Analyst,any_degree,269
+Healthcare,Medical Data Analyst,no_degree,35
+Healthcare,Medical Data Analyst,not_mentioned,665
+Healthcare,Medical Data Analyst,preferred,57
+Healthcare,Medical Data Analyst,required,10
+Healthcare,Pharmacist,any_degree,45
+Healthcare,Pharmacist,no_degree,3
+Healthcare,Pharmacist,not_mentioned,330
+Healthcare,Physical Therapist,any_degree,50
+Healthcare,Physical Therapist,not_mentioned,937
+Healthcare,Physical Therapist,preferred,4
+Healthcare,Physical Therapist,required,2
+Healthcare,Physician,any_degree,7
+Healthcare,Physician,no_degree,3
+Healthcare,Physician,not_mentioned,948
+Healthcare,Physician,preferred,1
+Healthcare,Radiologic Technologist,any_degree,5
+Healthcare,Radiologic Technologist,no_degree,4
+Healthcare,Radiologic Technologist,not_mentioned,584
+Healthcare,Radiologic Technologist,preferred,4
+Healthcare,Radiologic Technologist,required,1
+Healthcare,Registered Nurse,any_degree,96
+Healthcare,Registered Nurse,no_degree,7
+Healthcare,Registered Nurse,not_mentioned,993
+Healthcare,Registered Nurse,preferred,31
+Healthcare,Registered Nurse,required,10
+Technology,AI Research Scientist,any_degree,300
+Technology,AI Research Scientist,no_degree,60
+Technology,AI Research Scientist,not_mentioned,766
+Technology,AI Research Scientist,preferred,12
+Technology,Cloud Architect,any_degree,134
+Technology,Cloud Architect,no_degree,13
+Technology,Cloud Architect,not_mentioned,233
+Technology,Cloud Architect,preferred,39
+Technology,Cybersecurity Analyst,any_degree,62
+Technology,Cybersecurity Analyst,no_degree,13
+Technology,Cybersecurity Analyst,not_mentioned,184
+Technology,Cybersecurity Analyst,preferred,8
+Technology,Data Scientist,any_degree,283
+Technology,Data Scientist,no_degree,46
+Technology,Data Scientist,not_mentioned,777
+Technology,Data Scientist,preferred,38
+Technology,DevOps Engineer,any_degree,69
+Technology,DevOps Engineer,no_degree,16
+Technology,DevOps Engineer,not_mentioned,229
+Technology,DevOps Engineer,preferred,8
+Technology,DevOps Engineer,required,3
+Technology,Full Stack Developer,any_degree,177
+Technology,Full Stack Developer,no_degree,37
+Technology,Full Stack Developer,not_mentioned,544
+Technology,Full Stack Developer,preferred,26
+Technology,Machine Learning Engineer,any_degree,404
+Technology,Machine Learning Engineer,no_degree,77
+Technology,Machine Learning Engineer,not_mentioned,631
+Technology,Machine Learning Engineer,preferred,26
+Technology,Product Manager,any_degree,265
+Technology,Product Manager,no_degree,57
+Technology,Product Manager,not_mentioned,664
+Technology,Product Manager,preferred,139
+Technology,Product Manager,required,13
+Technology,Software Engineer,any_degree,401
+Technology,Software Engineer,no_degree,52
+Technology,Software Engineer,not_mentioned,633
+Technology,Software Engineer,preferred,53
+Technology,UX Designer,any_degree,62
+Technology,UX Designer,no_degree,21
+Technology,UX Designer,not_mentioned,332
+Technology,UX Designer,preferred,49
