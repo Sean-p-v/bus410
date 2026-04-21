@@ -237,8 +237,8 @@ k5.metric("Avg Completion Rate", f"{filtered['C150_4'].mean():.0%}" if filtered[
 st.markdown("---")
 
 # ── Tabs ─────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
-    "📊 Overview", "💰 Earnings & ROI", "🎯 Admissions", "🗺️ Geographic",
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+    "📊 Overview", "💰 Earnings & ROI", "🎯 Admissions",
     "🤖 AI Impact", "📋 Job Postings", "🔍 Institution Lookup",
     "🔮 Predictions", "🎓 Student Guide"
 ])
@@ -496,82 +496,9 @@ with tab3:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# TAB 4: GEOGRAPHIC
+# TAB 4: AI IMPACT
 # ════════════════════════════════════════════════════════════════════════════
 with tab4:
-    st.header("Geographic Analysis")
-
-    metric_choice = st.selectbox(
-        "Color institutions by:",
-        ["Median Earnings (10yr)", "Admission Rate", "Average Cost", "Completion Rate", "Pell Grant %"],
-    )
-    metric_map = {
-        "Median Earnings (10yr)": "MD_EARN_WNE_P10",
-        "Admission Rate": "ADM_RATE",
-        "Average Cost": "COSTT4_A",
-        "Completion Rate": "C150_4",
-        "Pell Grant %": "PCTPELL",
-    }
-    metric_col = metric_map[metric_choice]
-
-    geo = filtered.dropna(subset=["LATITUDE", "LONGITUDE", metric_col]).copy()
-    if not geo.empty:
-        fig = px.scatter_mapbox(
-            geo, lat="LATITUDE", lon="LONGITUDE",
-            color=metric_col, size="UGDS", size_max=12,
-            hover_name="INSTNM",
-            hover_data={"STABBR": True, "CONTROL_NAME": True, metric_col: ":.2f", "UGDS": ":,"},
-            title=f"Institutions by {metric_choice}",
-            color_continuous_scale="Viridis",
-            mapbox_style="carto-positron",
-            zoom=3, center={"lat": 39.5, "lon": -98.35},
-        )
-        fig.update_layout(height=600, margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("No geographic data available with current filters.")
-
-    # State-level aggregation
-    st.subheader("State-Level Averages")
-    state_agg = (
-        filtered.groupby("STABBR")
-        .agg(
-            institutions=("UNITID", "nunique"),
-            avg_earnings=("MD_EARN_WNE_P10", "mean"),
-            avg_cost=("COSTT4_A", "mean"),
-            avg_adm=("ADM_RATE", "mean"),
-            avg_completion=("C150_4", "mean"),
-        )
-        .reset_index()
-    )
-
-    state_metric = st.selectbox(
-        "State map metric:",
-        ["avg_earnings", "avg_cost", "avg_adm", "avg_completion", "institutions"],
-    )
-    state_labels = {
-        "avg_earnings": "Avg Earnings ($)",
-        "avg_cost": "Avg Cost ($)",
-        "avg_adm": "Avg Admission Rate",
-        "avg_completion": "Avg Completion Rate",
-        "institutions": "# Institutions",
-    }
-
-    fig_state = px.choropleth(
-        state_agg, locations="STABBR", locationmode="USA-states",
-        color=state_metric, scope="usa",
-        color_continuous_scale="Viridis",
-        title=f"States by {state_labels[state_metric]}",
-        labels={"STABBR": "State", state_metric: state_labels[state_metric]},
-    )
-    fig_state.update_layout(height=500, margin=dict(l=0, r=0, t=40, b=0))
-    st.plotly_chart(fig_state, use_container_width=True)
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# TAB 5: AI IMPACT
-# ════════════════════════════════════════════════════════════════════════════
-with tab5:
     st.header("AI Impact on Career Fields")
     st.markdown(
         "Combining [Anthropic's Labor Market Impact Study](https://www.anthropic.com/research/labor-market-impacts) "
@@ -843,7 +770,7 @@ with tab5:
 # ════════════════════════════════════════════════════════════════════════════
 # TAB 6: JOB POSTINGS ANALYSIS
 # ════════════════════════════════════════════════════════════════════════════
-with tab6:
+with tab5:
     st.header("Job Postings Analysis — Bay Area")
     st.markdown(
         "Real-world job posting data scraped from Indeed, LinkedIn & ZipRecruiter "
@@ -1270,7 +1197,7 @@ with tab6:
 # ════════════════════════════════════════════════════════════════════════════
 # TAB 7: INSTITUTION LOOKUP
 # ════════════════════════════════════════════════════════════════════════════
-with tab7:
+with tab6:
     st.header("Institution Lookup")
 
     search = st.text_input("Search for an institution:", placeholder="e.g. University of San Francisco")
@@ -1287,6 +1214,9 @@ with tab7:
 
             st.subheader(selected)
 
+            if inst.empty:
+                st.warning("No data available for this institution with current filters.")
+                st.stop()
             latest = inst.iloc[-1]
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Location", f"{latest.get('CITY', 'N/A')}, {latest.get('STABBR', 'N/A')}")
@@ -1313,7 +1243,8 @@ with tab7:
                 available_trends = {k: v for k, v in trend_cols.items() if inst[k].notna().any()}
                 if available_trends:
                     sel_trend = st.selectbox("Metric:", list(available_trends.values()))
-                    trend_col = [k for k, v in available_trends.items() if v == sel_trend][0]
+                    _trend_matches = [k for k, v in available_trends.items() if v == sel_trend]
+                    trend_col = _trend_matches[0] if _trend_matches else list(available_trends.keys())[0]
                     fig = px.line(
                         inst, x="YEAR", y=trend_col, markers=True,
                         title=f"{sel_trend} for {selected}",
@@ -1353,7 +1284,7 @@ with tab7:
 # ════════════════════════════════════════════════════════════════════════════
 # TAB 8: PREDICTIONS (ML Pipeline)
 # ════════════════════════════════════════════════════════════════════════════
-with tab8:
+with tab7:
     st.header("🔮 ML Predictions: Job Market Disruption")
     st.caption(
         "Four machine learning models trained on scraped job postings, BLS projections, "
@@ -1381,12 +1312,13 @@ with tab8:
         st.subheader("Model Performance")
         perf = ml["performance"]
         if not perf.empty:
-            p_cols = st.columns(len(perf))
-            for i, row in perf.iterrows():
-                score = row.get("cv_accuracy", row.get("cv_score", None))
-                label = row.get("model", f"Model {i+1}")
+            p_cols = st.columns(max(1, len(perf)))
+            for col_idx, (_, row) in enumerate(perf.iterrows()):
+                score = row.get("cv_mean", row.get("cv_accuracy", row.get("cv_score", None)))
+                label = row.get("model", f"Model {col_idx+1}")
+                metric_name = row.get("metric", "Score")
                 if pd.notna(score):
-                    p_cols[i % len(p_cols)].metric(label, f"{score:.1%}")
+                    p_cols[col_idx % len(p_cols)].metric(label, f"{score:.1%}", help=metric_name)
 
         st.markdown("---")
 
@@ -1407,8 +1339,10 @@ with tab8:
             )
             dis = ml["disruption"].copy()
             if not dis.empty:
-                score_col = "disruption_score" if "disruption_score" in dis.columns else dis.columns[-1]
-                title_col = "search_title" if "search_title" in dis.columns else dis.columns[0]
+                score_col = "disruption_score" if "disruption_score" in dis.columns \
+                            else ([c for c in dis.columns if "score" in c.lower()] or [dis.columns[-1]])[0]
+                title_col = "job_title" if "job_title" in dis.columns \
+                            else ("search_title" if "search_title" in dis.columns else dis.columns[0])
                 ai_col    = "ai_exposed" if "ai_exposed" in dis.columns else None
 
                 dis = dis.sort_values(score_col, ascending=False).reset_index(drop=True)
@@ -1472,9 +1406,13 @@ with tab8:
             )
             deg_pred = ml["degree_pred"].copy()
             if not deg_pred.empty:
+                _prob_candidates = [c for c in deg_pred.columns if "prob" in c.lower()]
                 prob_col  = "prob_degree_required" if "prob_degree_required" in deg_pred.columns \
-                            else [c for c in deg_pred.columns if "prob" in c.lower()][0]
-                title_col = "search_title" if "search_title" in deg_pred.columns else deg_pred.columns[0]
+                            else (_prob_candidates[0] if _prob_candidates else deg_pred.columns[0])
+                _title_candidates = [c for c in deg_pred.columns if "title" in c.lower() or "job" in c.lower()]
+                title_col = "job_title" if "job_title" in deg_pred.columns \
+                            else ("search_title" if "search_title" in deg_pred.columns \
+                            else (_title_candidates[0] if _title_candidates else deg_pred.columns[0]))
 
                 deg_pred = deg_pred.sort_values(prob_col, ascending=False).reset_index(drop=True)
                 ai_col   = "ai_exposed" if "ai_exposed" in deg_pred.columns else None
@@ -1522,9 +1460,14 @@ with tab8:
             )
             ai_ad = ml["ai_adoption"].copy()
             if not ai_ad.empty:
-                pred_col  = "pred_ai_prob" if "pred_ai_prob" in ai_ad.columns \
-                            else [c for c in ai_ad.columns if "prob" in c.lower()][0]
-                title_col = "search_title" if "search_title" in ai_ad.columns else ai_ad.columns[0]
+                _pred_candidates = [c for c in ai_ad.columns if "prob" in c.lower()]
+                pred_col  = "prob_ai_in_postings" if "prob_ai_in_postings" in ai_ad.columns \
+                            else ("pred_ai_prob" if "pred_ai_prob" in ai_ad.columns \
+                            else (_pred_candidates[0] if _pred_candidates else ai_ad.columns[0]))
+                _title_candidates = [c for c in ai_ad.columns if "title" in c.lower() or "job" in c.lower()]
+                title_col = "job_title" if "job_title" in ai_ad.columns \
+                            else ("search_title" if "search_title" in ai_ad.columns \
+                            else (_title_candidates[0] if _title_candidates else ai_ad.columns[0]))
                 gap_col   = "gap_vs_anthropic" if "gap_vs_anthropic" in ai_ad.columns else None
 
                 ai_ad = ai_ad.sort_values(pred_col, ascending=False).reset_index(drop=True)
@@ -1588,8 +1531,11 @@ with tab8:
             sf = ml["startup_feat"].copy()
             if not sf.empty:
                 word_col  = "feature" if "feature" in sf.columns else sf.columns[0]
+                _coef_candidates = [c for c in sf.columns if any(
+                    k in c.lower() for k in ["coef", "weight", "difference", "diff"]
+                )]
                 coef_col  = "coefficient" if "coefficient" in sf.columns \
-                            else [c for c in sf.columns if "coef" in c.lower() or "weight" in c.lower()][0]
+                            else (_coef_candidates[0] if _coef_candidates else sf.columns[-1])
                 label_col = "label" if "label" in sf.columns else None
 
                 sf = sf.sort_values(coef_col, ascending=False)
@@ -1643,7 +1589,7 @@ with tab8:
 # ════════════════════════════════════════════════════════════════════════════
 # TAB 9: STUDENT GUIDE
 # ════════════════════════════════════════════════════════════════════════════
-with tab9:
+with tab8:
     st.header("🎓 Student Guide — What This Data Means for You")
     st.markdown(
         "Based on our analysis of 30,000+ Bay Area job postings and the Anthropic Labor Market Index, "
