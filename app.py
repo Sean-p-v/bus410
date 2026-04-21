@@ -1203,21 +1203,32 @@ with tab6:
     search = st.text_input("Search for an institution:", placeholder="e.g. University of San Francisco")
 
     if search:
-        matches = filtered[filtered["INSTNM"].str.contains(search, case=False, na=False)]
-        unique_matches = matches.drop_duplicates(subset="INSTNM")
+        # Search across ALL years (not just filtered) so earnings data is never lost
+        all_matches = df[df["INSTNM"].str.contains(search, case=False, na=False)]
+        unique_matches = all_matches.drop_duplicates(subset="INSTNM")
 
         if unique_matches.empty:
             st.warning("No institutions found. Try a different search term.")
         else:
             selected = st.selectbox("Select institution:", unique_matches["INSTNM"].tolist())
-            inst = matches[matches["INSTNM"] == selected].sort_values("YEAR")
+            inst = all_matches[all_matches["INSTNM"] == selected].sort_values("YEAR")
 
             st.subheader(selected)
 
             if inst.empty:
-                st.warning("No data available for this institution with current filters.")
+                st.warning("No data available for this institution.")
                 st.stop()
+
             latest = inst.iloc[-1]
+
+            # For earnings: look across ALL years and use most recent non-null value
+            def best_val(col):
+                vals = inst[col].dropna()
+                return vals.iloc[-1] if not vals.empty else np.nan
+
+            earnings = best_val("MD_EARN_WNE_P10")
+            earnings_yr = inst[inst["MD_EARN_WNE_P10"].notna()]["YEAR"].max() if inst["MD_EARN_WNE_P10"].notna().any() else None
+
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Location", f"{latest.get('CITY', 'N/A')}, {latest.get('STABBR', 'N/A')}")
             col2.metric("Type", str(latest.get("CONTROL_NAME", "N/A")))
@@ -1226,9 +1237,13 @@ with tab6:
 
             col5, col6, col7, col8 = st.columns(4)
             col5.metric("SAT Average", f"{latest['SAT_AVG']:.0f}" if pd.notna(latest.get("SAT_AVG")) else "N/A")
-            col6.metric("Annual Cost", f"${latest['COSTT4_A']:,.0f}" if pd.notna(latest.get("COSTT4_A")) else "N/A")
-            col7.metric("Completion Rate", f"{latest['C150_4']:.0%}" if pd.notna(latest.get("C150_4")) else "N/A")
-            col8.metric("Median Earnings", f"${latest['MD_EARN_WNE_P10']:,.0f}" if pd.notna(latest.get("MD_EARN_WNE_P10")) else "N/A")
+            col6.metric("Annual Cost", f"${best_val('COSTT4_A'):,.0f}" if pd.notna(best_val("COSTT4_A")) else "N/A")
+            col7.metric("Completion Rate", f"{best_val('C150_4'):.0%}" if pd.notna(best_val("C150_4")) else "N/A")
+            col8.metric(
+                f"Median Earnings {'('+str(int(earnings_yr))+')' if earnings_yr else ''}",
+                f"${earnings:,.0f}" if pd.notna(earnings) else "N/A",
+                help="10-year post-enrollment median earnings. Data available for 2020–21 cohort only."
+            )
 
             # Time series for this institution
             if len(inst) > 1:
@@ -1330,12 +1345,15 @@ with tab7:
             "🚀 Startup vs Established",
         ])
 
-        # ── MODEL 3: Composite Disruption Score ──────────────────────────────
+        # ════════════════════════════════
+        # MODEL 3: Composite Disruption
+        # ════════════════════════════════
         with m1:
-            st.subheader("Composite Disruption Score — All 20 Occupations")
+            st.subheader("Composite Disruption Score — 30 Occupations")
             st.caption(
-                "Weighted composite: 40% Anthropic theoretical exposure · 20% BLS disruption · "
-                "15% observed AI mentions · 15% degree-drop rate · 10% startup share"
+                "Weighted composite: 40% Anthropic theoretical · 20% BLS growth · "
+                "15% observed AI mentions · 15% degree-drop rate · 10% startup share  |  "
+                "**Higher = more disrupted by AI**"
             )
             dis = ml["disruption"].copy()
             if not dis.empty:
@@ -1343,66 +1361,91 @@ with tab7:
                             else ([c for c in dis.columns if "score" in c.lower()] or [dis.columns[-1]])[0]
                 title_col = "job_title" if "job_title" in dis.columns \
                             else ("search_title" if "search_title" in dis.columns else dis.columns[0])
-                ai_col    = "ai_exposed" if "ai_exposed" in dis.columns else None
 
-                dis = dis.sort_values(score_col, ascending=False).reset_index(drop=True)
+                dis = dis.sort_values(score_col, ascending=True).reset_index(drop=True)
 
-                # Color by AI exposure group
-                color_arg = {}
-                if ai_col:
-                    color_arg = {"color": ai_col,
-                                 "color_discrete_map": {"High AI": "#EF4444", "Low AI": "#3B82F6"}}
+                # Color by industry (clearest grouping)
+                ind_colors = {"Healthcare": "#48BB78", "Technology": "#667EEA", "Finance": "#F6AD55"}
+                has_industry = "industry" in dis.columns
+                color_arg = {"color": "industry", "color_discrete_map": ind_colors} if has_industry else {}
 
+                # Risk zones via background shapes
                 fig_dis = px.bar(
                     dis, x=score_col, y=title_col,
                     orientation="h",
-                    title="Predicted Disruption Score by Occupation",
+                    title="AI Disruption Score by Occupation (Higher = More At Risk)",
                     labels={score_col: "Disruption Score (0–100)", title_col: ""},
                     **color_arg,
                 )
+                # Shade risk zones
+                fig_dis.add_vrect(x0=0,  x1=40, fillcolor="#d1fae5", opacity=0.25, line_width=0, annotation_text="🟢 Lower Risk", annotation_position="top left")
+                fig_dis.add_vrect(x0=40, x1=65, fillcolor="#fef3c7", opacity=0.25, line_width=0, annotation_text="🟡 Medium Risk", annotation_position="top left")
+                fig_dis.add_vrect(x0=65, x1=100,fillcolor="#fee2e2", opacity=0.25, line_width=0, annotation_text="🔴 High Risk", annotation_position="top left")
                 fig_dis.update_layout(
-                    height=600,
-                    yaxis=dict(autorange="reversed"),
-                    xaxis=dict(range=[0, 100]),
-                    legend_title_text="AI Exposure",
+                    height=max(600, len(dis) * 24 + 100),
+                    xaxis=dict(range=[0, 100], title_font=dict(size=13), tickfont=dict(size=12)),
+                    yaxis=dict(tickfont=dict(size=12)),
+                    legend=dict(title="Industry", orientation="h", y=-0.08, font=dict(size=12)),
+                    margin=dict(l=220, t=60, b=60),
+                    plot_bgcolor="#fafafa",
                 )
-                fig_dis.add_vline(x=50, line_dash="dash", line_color="gray",
-                                  annotation_text="50 = midpoint", annotation_position="top right")
                 st.plotly_chart(fig_dis, use_container_width=True)
 
-                # Signal breakdown table
-                signal_cols = [c for c in ["ai_theoretical_pct", "bls_disruption_pct",
-                                            "our_ai_pct", "no_deg_pct", "startup_pct",
-                                            score_col] if c in dis.columns]
-                if len(signal_cols) > 1:
-                    st.subheader("Signal Breakdown")
-                    rename_signals = {
-                        "ai_theoretical_pct": "Anthropic Score",
-                        "bls_disruption_pct": "BLS Disruption",
-                        "our_ai_pct":         "Observed AI%",
-                        "no_deg_pct":         "No-Degree Rate",
-                        "startup_pct":        "Startup Share",
-                        score_col:            "Composite Score",
-                    }
-                    display_dis = dis[[title_col] + signal_cols].rename(
-                        columns={**rename_signals, title_col: "Job Title"}
-                    )
+                # Clean signal table — only include columns that exist
+                signal_map = {
+                    "anthropic_theoretical": "Anthropic Score",
+                    "our_ai_pct":            "Observed AI%",
+                    "degree_dropping_pct":   "Degree Drop%",
+                    "startup_prevalence_pct":"Startup Share",
+                    score_col:               "⚡ Score",
+                }
+                show_sig = [c for c in signal_map if c in dis.columns]
+                if show_sig:
+                    disp = dis[[title_col] + (["industry"] if has_industry else []) + show_sig].copy()
+                    disp.rename(columns={**{k: v for k, v in signal_map.items()}, title_col: "Job Title", "industry": "Industry"}, inplace=True)
+                    disp = disp.sort_values("⚡ Score", ascending=False).reset_index(drop=True)
                     st.dataframe(
-                        display_dis.reset_index(drop=True),
+                        disp,
                         use_container_width=True,
-                        column_config={
-                            "Composite Score": st.column_config.ProgressColumn(
-                                "Composite Score", min_value=0, max_value=100, format="%.1f"
-                            )
-                        }
+                        column_config={"⚡ Score": st.column_config.ProgressColumn(
+                            "⚡ Score", min_value=0, max_value=100, format="%.0f"
+                        )},
+                        hide_index=True,
                     )
 
-        # ── MODEL 1: Degree Predictions ───────────────────────────────────────
+                # Job listing drill-down (issue #6)
+                if postings_available and not postings["enriched"].empty:
+                    st.markdown("---")
+                    st.subheader("🔍 View Postings for a Specific Role")
+                    drill_title = st.selectbox(
+                        "Select job title:", dis[title_col].tolist(), key="drill_dis"
+                    )
+                    drill_df = postings["enriched"]
+                    match_col = "search_title" if "search_title" in drill_df.columns else "job_title"
+                    drill_sub = drill_df[drill_df[match_col] == drill_title]
+                    if not drill_sub.empty:
+                        show = [c for c in ["company", "title", "location", "date_posted",
+                                            "degree_requirement", "any_ai", "company_type",
+                                            "salary_min"] if c in drill_sub.columns]
+                        st.caption(f"{len(drill_sub):,} postings for **{drill_title}**")
+                        st.dataframe(drill_sub[show].rename(columns={
+                            "company": "Employer", "title": "Job Title Posted",
+                            "location": "Location", "date_posted": "Date",
+                            "degree_requirement": "Degree", "any_ai": "AI Mentioned",
+                            "company_type": "Co. Type", "salary_min": "Min Salary",
+                        }).reset_index(drop=True),
+                        use_container_width=True, height=350,
+                        column_config={"Min Salary": st.column_config.NumberColumn(format="$%,.0f"),
+                                       "AI Mentioned": st.column_config.CheckboxColumn()})
+
+        # ════════════════════════════════
+        # MODEL 1: Degree Predictions
+        # ════════════════════════════════
         with m2:
-            st.subheader("Degree Requirement Probability — by Job Title")
+            st.subheader("Will This Role Require a Degree? — ML Prediction")
             st.caption(
-                "Random Forest model trained on posting text features. "
-                "Higher probability = degree more likely to be listed as required."
+                "Random Forest model trained on Bay Area job postings. "
+                "Bar = predicted probability that a degree will be listed as required or preferred."
             )
             deg_pred = ml["degree_pred"].copy()
             if not deg_pred.empty:
@@ -1414,49 +1457,86 @@ with tab7:
                             else ("search_title" if "search_title" in deg_pred.columns \
                             else (_title_candidates[0] if _title_candidates else deg_pred.columns[0]))
 
-                deg_pred = deg_pred.sort_values(prob_col, ascending=False).reset_index(drop=True)
-                ai_col   = "ai_exposed" if "ai_exposed" in deg_pred.columns else None
+                deg_pred = deg_pred.sort_values(prob_col, ascending=True).reset_index(drop=True)
+                has_industry = "industry" in deg_pred.columns
 
-                color_arg = {}
-                if ai_col:
-                    color_arg = {"color": ai_col,
-                                 "color_discrete_map": {"High AI": "#8B5CF6", "Low AI": "#10B981"}}
-
+                # Color by degree likelihood — blue gradient, not AI exposure
+                deg_pred["_prob_pct"] = deg_pred[prob_col]
                 fig_deg = px.bar(
                     deg_pred, x=prob_col, y=title_col,
                     orientation="h",
-                    title="Predicted Probability: Degree Listed as Required",
-                    labels={prob_col: "P(Degree Required)", title_col: ""},
-                    **color_arg,
+                    color=prob_col,
+                    color_continuous_scale=[[0, "#d1fae5"], [0.5, "#fef3c7"], [1.0, "#fee2e2"]],
+                    title="Predicted Probability: Degree Required (Green = Less Likely, Red = More Likely)",
+                    labels={prob_col: "Probability (0% = never, 100% = always)", title_col: ""},
                 )
+                # Add 50% threshold line
+                fig_deg.add_vline(x=0.5, line_dash="dash", line_color="#6B7280", line_width=2,
+                                  annotation_text="50% — flip point", annotation_position="top right",
+                                  annotation_font=dict(size=11, color="#6B7280"))
                 fig_deg.update_layout(
-                    height=580,
-                    yaxis=dict(autorange="reversed"),
-                    xaxis=dict(range=[0, 1], tickformat=".0%"),
+                    height=max(550, len(deg_pred) * 24 + 100),
+                    xaxis=dict(range=[0, 1], tickformat=".0%", title_font=dict(size=13), tickfont=dict(size=12)),
+                    yaxis=dict(tickfont=dict(size=12)),
+                    coloraxis_showscale=False,
+                    margin=dict(l=220, t=60, b=60),
+                    plot_bgcolor="#fafafa",
                 )
-                fig_deg.add_vline(x=0.5, line_dash="dash", line_color="gray",
-                                  annotation_text="50% threshold", annotation_position="top right")
                 st.plotly_chart(fig_deg, use_container_width=True)
 
-                # Insight callout
-                high_deg  = deg_pred[deg_pred[prob_col] >= 0.7][title_col].tolist()
-                low_deg   = deg_pred[deg_pred[prob_col] <= 0.3][title_col].tolist()
-                col_i1, col_i2 = st.columns(2)
-                with col_i1:
-                    if high_deg:
-                        st.success(f"**Strongly degree-dependent ({len(high_deg)} roles):**\n\n" +
-                                   ", ".join(high_deg))
-                with col_i2:
-                    if low_deg:
-                        st.info(f"**Degree rarely required ({len(low_deg)} roles):**\n\n" +
-                                ", ".join(low_deg))
+                # Clear plain-English summary table
+                deg_pred["Degree Likely?"] = deg_pred[prob_col].apply(
+                    lambda p: "✅ Yes (>70%)" if p >= 0.7 else ("⚠️ Maybe (40–70%)" if p >= 0.4 else "🚫 Unlikely (<40%)")
+                )
+                show_cols = [title_col] + (["industry"] if has_industry else []) + ["actual_pct_degree", prob_col, "Degree Likely?"]
+                show_cols = [c for c in show_cols if c in deg_pred.columns or c == "Degree Likely?"]
+                disp_deg = deg_pred[show_cols].rename(columns={
+                    title_col: "Job Title", "industry": "Industry",
+                    "actual_pct_degree": "Actual % w/ Degree", prob_col: "ML Prediction",
+                }).reset_index(drop=True)
+                st.dataframe(
+                    disp_deg,
+                    use_container_width=True,
+                    column_config={
+                        "ML Prediction": st.column_config.ProgressColumn(
+                            "ML Prediction", min_value=0, max_value=1, format="%.0%%"
+                        ),
+                        "Actual % w/ Degree": st.column_config.NumberColumn(format="%.0f%%"),
+                    },
+                    hide_index=True,
+                )
 
-        # ── MODEL 2: AI Adoption Gap ──────────────────────────────────────────
+                # Drill-down
+                if postings_available and not postings["enriched"].empty:
+                    st.markdown("---")
+                    st.subheader("🔍 View Postings for a Specific Role")
+                    drill_title = st.selectbox("Select job title:", deg_pred[title_col].tolist(), key="drill_deg")
+                    drill_df = postings["enriched"]
+                    match_col = "search_title" if "search_title" in drill_df.columns else "job_title"
+                    drill_sub = drill_df[drill_df[match_col] == drill_title]
+                    if not drill_sub.empty:
+                        show = [c for c in ["company", "title", "location", "date_posted",
+                                            "degree_requirement", "any_ai", "salary_min"] if c in drill_sub.columns]
+                        st.caption(f"{len(drill_sub):,} postings for **{drill_title}**")
+                        st.dataframe(drill_sub[show].rename(columns={
+                            "company": "Employer", "title": "Job Title Posted",
+                            "location": "Location", "date_posted": "Date",
+                            "degree_requirement": "Degree", "any_ai": "AI Mentioned",
+                            "salary_min": "Min Salary",
+                        }).reset_index(drop=True),
+                        use_container_width=True, height=350,
+                        column_config={"Min Salary": st.column_config.NumberColumn(format="$%,.0f"),
+                                       "AI Mentioned": st.column_config.CheckboxColumn()})
+
+        # ════════════════════════════════
+        # MODEL 2: AI Adoption Gap
+        # ════════════════════════════════
         with m3:
-            st.subheader("AI Adoption: Observed vs Anthropic Prediction")
+            st.subheader("AI Adoption: What Bay Area Employers Actually Ask For vs Anthropic's Prediction")
             st.caption(
-                "Logistic Regression model predicts AI adoption probability per job title. "
-                "Gap = our observed AI% minus Anthropic's published observed exposure score."
+                "Each bar = one job title. Blue = Anthropic's observed score. "
+                "Orange = our actual % of Bay Area postings mentioning AI. "
+                "Gap = how far ahead or behind real adoption is vs the benchmark."
             )
             ai_ad = ml["ai_adoption"].copy()
             if not ai_ad.empty:
@@ -1470,64 +1550,78 @@ with tab7:
                             else (_title_candidates[0] if _title_candidates else ai_ad.columns[0]))
                 gap_col   = "gap_vs_anthropic" if "gap_vs_anthropic" in ai_ad.columns else None
 
-                ai_ad = ai_ad.sort_values(pred_col, ascending=False).reset_index(drop=True)
+                # Replace scatter with side-by-side grouped bar — far more readable
+                anthro_col   = "anthropic_observed" if "anthropic_observed" in ai_ad.columns else None
+                actual_col   = "actual_pct_ai" if "actual_pct_ai" in ai_ad.columns else None
 
-                # Scatter: our prediction vs Anthropic observed
-                anthro_col = "anthropic_observed" if "anthropic_observed" in ai_ad.columns else None
-                if anthro_col:
-                    fig_scatter = px.scatter(
-                        ai_ad,
-                        x=anthro_col, y=pred_col,
-                        text=title_col,
-                        title="Our AI Adoption Prediction vs Anthropic Observed Score",
-                        labels={
-                            anthro_col: "Anthropic Observed Exposure (%)",
-                            pred_col:   "Our Predicted AI Adoption Probability",
-                        },
-                        color="ai_exposed" if "ai_exposed" in ai_ad.columns else None,
-                        color_discrete_map={"High AI": "#EF4444", "Low AI": "#3B82F6"},
+                if anthro_col and actual_col:
+                    ai_sorted = ai_ad.sort_values(actual_col, ascending=True).reset_index(drop=True)
+                    fig_adopt = go.Figure()
+                    fig_adopt.add_trace(go.Bar(
+                        y=ai_sorted[title_col],
+                        x=ai_sorted[anthro_col],
+                        name="Anthropic Benchmark (%)",
+                        orientation="h",
+                        marker_color="#818cf8",
+                        text=ai_sorted[anthro_col].round(1).astype(str) + "%",
+                        textposition="outside",
+                    ))
+                    fig_adopt.add_trace(go.Bar(
+                        y=ai_sorted[title_col],
+                        x=ai_sorted[actual_col],
+                        name="Our Observed: Bay Area (%)",
+                        orientation="h",
+                        marker_color="#F59E0B",
+                        text=ai_sorted[actual_col].round(1).astype(str) + "%",
+                        textposition="outside",
+                    ))
+                    fig_adopt.update_layout(
+                        barmode="group",
+                        height=max(600, len(ai_sorted) * 32 + 120),
+                        xaxis=dict(title="% of Postings Mentioning AI", tickfont=dict(size=12), ticksuffix="%"),
+                        yaxis=dict(tickfont=dict(size=12)),
+                        legend=dict(orientation="h", y=-0.08, font=dict(size=13)),
+                        margin=dict(l=220, t=60, b=70),
+                        plot_bgcolor="#fafafa",
+                        title=dict(text="Bay Area AI Adoption vs Anthropic Benchmark — Per Job Title", font=dict(size=15)),
                     )
-                    fig_scatter.update_traces(textposition="top center", marker_size=10)
-                    # 45-degree reference line
-                    max_val = max(ai_ad[anthro_col].max(), ai_ad[pred_col].max() * 100)
-                    fig_scatter.add_shape(
-                        type="line", x0=0, y0=0, x1=max_val, y1=max_val / 100,
-                        line=dict(dash="dot", color="gray"),
-                    )
-                    fig_scatter.add_annotation(
-                        x=max_val * 0.7, y=max_val / 100 * 0.7,
-                        text="Perfect Agreement", showarrow=False,
-                        font=dict(color="gray", size=11), textangle=-30,
-                    )
-                    fig_scatter.update_layout(height=500)
-                    st.plotly_chart(fig_scatter, use_container_width=True)
+                    st.plotly_chart(fig_adopt, use_container_width=True)
 
-                # Gap bar chart
+                # Gap bar — horizontal, sorted largest to smallest
                 if gap_col and gap_col in ai_ad.columns:
-                    gap_sorted = ai_ad.sort_values(gap_col, ascending=False)
-                    fig_gap = px.bar(
-                        gap_sorted, x=title_col, y=gap_col,
-                        color=gap_col,
-                        color_continuous_scale="RdBu",
-                        color_continuous_midpoint=0,
-                        title="AI Adoption Gap: Our Observed % − Anthropic Benchmark",
-                        labels={gap_col: "Gap (pp)", title_col: ""},
+                    gap_sorted = ai_ad.sort_values(gap_col, ascending=True).copy()
+                    gap_sorted["_color"] = gap_sorted[gap_col].apply(
+                        lambda v: "#10B981" if v > 0 else "#EF4444"
                     )
-                    fig_gap.add_hline(y=0, line_color="black", line_width=1)
-                    fig_gap.update_layout(height=420, showlegend=False)
+                    gap_sorted["_label"] = gap_sorted[gap_col].apply(
+                        lambda v: f"+{v:.1f} pp ahead" if v > 0 else f"{v:.1f} pp behind"
+                    )
+                    fig_gap = go.Figure(go.Bar(
+                        y=gap_sorted[title_col],
+                        x=gap_sorted[gap_col],
+                        orientation="h",
+                        marker_color=gap_sorted["_color"].tolist(),
+                        text=gap_sorted["_label"].tolist(),
+                        textposition="outside",
+                    ))
+                    fig_gap.add_vline(x=0, line_color="#374151", line_width=2)
+                    fig_gap.update_layout(
+                        title="Gap: Our Observed AI% vs Anthropic Benchmark (positive = ahead of prediction)",
+                        height=max(550, len(gap_sorted) * 24 + 100),
+                        xaxis=dict(title="Percentage Points Difference", tickfont=dict(size=12), ticksuffix=" pp"),
+                        yaxis=dict(tickfont=dict(size=12)),
+                        margin=dict(l=220, t=60, b=60),
+                        plot_bgcolor="#fafafa",
+                        showlegend=False,
+                    )
                     st.plotly_chart(fig_gap, use_container_width=True)
-                    st.caption(
-                        "Positive gap → jobs are mentioning AI MORE than Anthropic predicted. "
-                        "Negative gap → adoption is lagging the theoretical exposure score."
-                    )
+                    st.caption("🟢 Green = Bay Area employers mention AI MORE than Anthropic predicted  |  🔴 Red = lagging behind the benchmark")
 
-        # ── MODEL 4: Startup Language ─────────────────────────────────────────
+        # ════════════════════════════════
+        # MODEL 4: Startup vs Established
+        # ════════════════════════════════
         with m4:
-            st.subheader("Top Words That Distinguish Startup vs Established Postings")
-            st.caption(
-                "TF-IDF + Logistic Regression identifies which words/phrases are "
-                "most predictive of a startup posting vs an established-company posting."
-            )
+            st.subheader("How Startups Describe Jobs Differently from Established Companies")
             sf = ml["startup_feat"].copy()
             if not sf.empty:
                 word_col  = "feature" if "feature" in sf.columns else sf.columns[0]
@@ -1536,40 +1630,62 @@ with tab7:
                 )]
                 coef_col  = "coefficient" if "coefficient" in sf.columns \
                             else (_coef_candidates[0] if _coef_candidates else sf.columns[-1])
-                label_col = "label" if "label" in sf.columns else None
 
-                sf = sf.sort_values(coef_col, ascending=False)
-                sf["Direction"] = sf[coef_col].apply(
-                    lambda v: "📈 Startup Signal" if v > 0 else "🏢 Established Signal"
-                )
-                sf["Abs Coefficient"] = sf[coef_col].abs()
+                # Separate startup and established signals
+                startup_feats = sf[sf[coef_col] > 0].sort_values(coef_col, ascending=False).head(12)
+                estab_feats   = sf[sf[coef_col] < 0].sort_values(coef_col, ascending=True).head(12)
+                estab_feats   = estab_feats.copy()
+                estab_feats[coef_col] = estab_feats[coef_col].abs()  # show as positive magnitude
 
-                fig_feat = px.bar(
-                    sf, x=coef_col, y=word_col,
-                    orientation="h",
-                    color="Direction",
-                    color_discrete_map={
-                        "📈 Startup Signal": "#F59E0B",
-                        "🏢 Established Signal": "#6366F1",
-                    },
-                    title="Startup vs Established: Key Language Signals",
-                    labels={coef_col: "Logistic Regression Coefficient", word_col: ""},
-                )
-                fig_feat.add_vline(x=0, line_color="black", line_width=1)
-                fig_feat.update_layout(
-                    height=500,
-                    yaxis=dict(autorange="reversed"),
-                    legend_title_text="Signal Type",
-                )
-                st.plotly_chart(fig_feat, use_container_width=True)
+                col_s, col_e = st.columns(2)
 
-                col_s1, col_s2 = st.columns(2)
-                startup_words = sf[sf[coef_col] > 0][word_col].tolist()
-                estab_words   = sf[sf[coef_col] < 0][word_col].tolist()
-                with col_s1:
-                    st.success("**Startup language:**\n\n" + " · ".join(startup_words[:10]))
-                with col_s2:
-                    st.info("**Established company language:**\n\n" + " · ".join(estab_words[:10]))
+                with col_s:
+                    st.markdown("#### 📈 Startup Signals")
+                    st.caption("Words more common in startup job postings")
+                    if not startup_feats.empty:
+                        fig_s = px.bar(
+                            startup_feats.sort_values(coef_col, ascending=True),
+                            x=coef_col, y=word_col, orientation="h",
+                            color_discrete_sequence=["#F59E0B"],
+                            labels={coef_col: "Signal Strength", word_col: ""},
+                        )
+                        fig_s.update_layout(
+                            height=420, margin=dict(l=160, t=20, b=40),
+                            xaxis=dict(tickfont=dict(size=11)),
+                            yaxis=dict(tickfont=dict(size=12)),
+                            plot_bgcolor="#fffbeb",
+                            showlegend=False,
+                        )
+                        st.plotly_chart(fig_s, use_container_width=True)
+
+                with col_e:
+                    st.markdown("#### 🏢 Established Company Signals")
+                    st.caption("Words more common in established company postings")
+                    if not estab_feats.empty:
+                        fig_e = px.bar(
+                            estab_feats.sort_values(coef_col, ascending=True),
+                            x=coef_col, y=word_col, orientation="h",
+                            color_discrete_sequence=["#6366F1"],
+                            labels={coef_col: "Signal Strength", word_col: ""},
+                        )
+                        fig_e.update_layout(
+                            height=420, margin=dict(l=160, t=20, b=40),
+                            xaxis=dict(tickfont=dict(size=11)),
+                            yaxis=dict(tickfont=dict(size=12)),
+                            plot_bgcolor="#eef2ff",
+                            showlegend=False,
+                        )
+                        st.plotly_chart(fig_e, use_container_width=True)
+
+                # Numeric difference table (cleaner than chart for this data)
+                numeric_only = sf[~sf[word_col].astype(str).str.contains('"', na=False)].copy()
+                if not numeric_only.empty and "startup_avg" in numeric_only.columns:
+                    st.markdown("#### Key Metric Differences")
+                    disp_sf = numeric_only[["feature", "startup_avg", "established_avg", "favors"]].rename(
+                        columns={"feature": "Metric", "startup_avg": "Startup Avg",
+                                 "established_avg": "Established Avg", "favors": "Favors"}
+                    ).reset_index(drop=True)
+                    st.dataframe(disp_sf, use_container_width=True, hide_index=True)
 
         # ── Full data tables ──────────────────────────────────────────────────
         st.markdown("---")
