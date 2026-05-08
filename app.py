@@ -186,6 +186,7 @@ st.sidebar.markdown(
     "[Student Implications](#implications)  \n"
     "[Five Takeaways](#takeaways)"
 )
+st.sidebar.markdown("[For Employers](#employers)  \n")
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Data Explorer**")
 st.sidebar.markdown(
@@ -387,10 +388,8 @@ with corr_cols[0]:
     WHY POSTINGS ALONE FAIL
   </div>
   <div style="color:#C8DDF0;font-size:0.9rem;line-height:1.7;">
-    Postings reflect demand — what companies want to hire.
-    They don't reveal who is being displaced.
-    A firm can post for ML Engineers while quietly laying off junior data analysts.
-    Both signals matter.
+    A company can be hiring ML Engineers and laying off junior analysts at the same time.
+    Postings only show one side of that.
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -403,10 +402,9 @@ with corr_cols[1]:
     WHAT LAYOFF DATA ADDS
   </div>
   <div style="color:#C8DDF0;font-size:0.9rem;line-height:1.7;">
-    Global layoff tracking (Layoffs.fyi, BLS mass layoff stats)
-    captures actual worker displacement by role, industry, and firm type.
-    HIGH postings + HIGH layoffs = transition.
-    HIGH postings + LOW layoffs = growth.
+    BLS tracks actual separations by industry every month.
+    Lots of postings + lots of layoffs means the field is churning, not growing.
+    That distinction matters when you're picking a career path.
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -706,6 +704,175 @@ for num, title, body in _takeaways:
   </div>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown(
+    '<p style="text-align:right;">'
+    '<a href="#top" style="color:#667eea;font-size:0.85rem;">↑ Back to top</a></p>',
+    unsafe_allow_html=True
+)
+st.markdown("---")
+
+# ════════════════════════════════════════════════════════════════════════════
+# NARRATIVE SECTION E: FOR EMPLOYERS
+# ════════════════════════════════════════════════════════════════════════════
+st.markdown('<div id="employers"></div>', unsafe_allow_html=True)
+st.header("For Employers & Workforce Planners", anchor="employers-content")
+st.markdown(
+    "*The same data that tells students where to go tells hiring teams where demand is heading. "
+    "The gap between AI theory and observed postings is a timing signal — not just a risk score.*"
+)
+
+# ── Three decision cards ──────────────────────────────────────────────────
+emp_cols = st.columns(3)
+_emp_cards = [
+    ("#065A82", "HIRE AHEAD OF THE SHIFT",
+     "Roles with high theoretical disruption but still-strong posting growth are in a hiring window. "
+     "Talent is available now. In 18–24 months the market will have caught up."),
+    ("#02C39A", "RETRAIN BEFORE YOU REPLACE",
+     "A disruption score of 45–70 usually means the role is changing, not disappearing. "
+     "Retraining a current employee costs a fraction of a new hire and preserves institutional knowledge."),
+    ("#F7C548", "STOP SOURCING FOR DECLINING ROLES",
+     "Roles above 75 with flat or falling posting growth are contracting. "
+     "Redirecting recruiter time away from those pipelines is immediate cost savings."),
+]
+for col, (color, heading, body) in zip(emp_cols, _emp_cards):
+    with col:
+        st.markdown(f"""
+<div style="background:#1C293C;border-radius:12px;padding:1.3rem 1.5rem;
+            border-top:3px solid {color};height:100%;">
+  <div style="color:{color};font-weight:700;font-size:0.85rem;
+              margin-bottom:0.7rem;letter-spacing:0.04em;">{heading}</div>
+  <div style="color:#C8DDF0;font-size:0.88rem;line-height:1.7;">{body}</div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Demand vs Disruption scatter ─────────────────────────────────────────
+st.markdown("#### Demand vs. Disruption — Employer Decision Matrix")
+st.caption(
+    "X-axis: job posting growth rate (%) · Y-axis: composite disruption score · "
+    "Bubble size = median salary ($K) · Color = industry"
+)
+
+_emp_roles = [
+    "ML Engineer", "Data Scientist", "Quant Analyst",
+    "Software Dev", "Financial Analyst", "Actuary",
+    "Reg. Nurse", "Phys. Therapist", "Cloud Architect",
+    "Data Analyst", "Cybersecurity Eng.", "Biomedical Eng.",
+]
+_emp_posting_growth = [42, 28, 12, 18, 8, 15, 31, 26, 38, -4, 45, 22]  # % YoY posting growth
+_emp_disruption     = [88, 76, 82, 65, 58, 42, 28, 18, 70, 72, 34, 31]  # composite score
+_emp_salary         = [195, 155, 175, 140, 110, 130, 78, 85, 182, 95, 145, 105]
+_emp_industry       = ["Tech","Tech","Finance","Tech","Finance","Finance",
+                       "Health","Health","Tech","Tech","Tech","Health"]
+_emp_colors         = {"Tech": "#667EEA", "Finance": "#F6AD55", "Health": "#48BB78"}
+_emp_col_list       = [_emp_colors[i] for i in _emp_industry]
+
+fig_emp = go.Figure()
+fig_emp.add_trace(go.Scatter(
+    x=_emp_posting_growth,
+    y=_emp_disruption,
+    mode="markers+text",
+    text=_emp_roles,
+    textposition="top center",
+    textfont=dict(size=10),
+    marker=dict(
+        size=[s / 5 for s in _emp_salary],
+        color=_emp_col_list,
+        opacity=0.85,
+        line=dict(width=1.5, color="white"),
+    ),
+    hovertemplate=(
+        "<b>%{text}</b><br>"
+        "Posting growth: %{x}%<br>"
+        "Disruption score: %{y}<br>"
+    ),
+))
+
+# Quadrant dividers
+fig_emp.add_hline(y=55, line_dash="dot", line_color="#aaa", line_width=1.2)
+fig_emp.add_vline(x=20, line_dash="dot", line_color="#aaa", line_width=1.2)
+
+# Quadrant labels
+_emp_quadrants = [
+    (35, 72, "HIRE NOW — window open",    "#065A82"),
+    (-8, 72, "PHASE OUT — stop sourcing", "#E53E3E"),
+    (35, 20, "BUILD PIPELINE — growing",  "#02C39A"),
+    (-8, 20, "STABLE — hire as needed",   "#48BB78"),
+]
+for qx, qy, qtxt, qcol in _emp_quadrants:
+    fig_emp.add_annotation(
+        x=qx, y=qy, text=f"<b>{qtxt}</b>",
+        showarrow=False,
+        font=dict(size=10, color=qcol),
+        bgcolor="#1C293C", bordercolor=qcol,
+        borderwidth=1, borderpad=4, opacity=0.88,
+    )
+
+fig_emp.update_layout(
+    xaxis=dict(title="Job Posting Growth Rate (% YoY)", range=[-15, 55], zeroline=True,
+               zerolinecolor="#ddd", zerolinewidth=1),
+    yaxis=dict(title="Composite Disruption Score (0–100)", range=[0, 105]),
+    height=460,
+    template="plotly_white",
+    showlegend=False,
+    margin=dict(t=20, b=40),
+)
+# Industry legend
+for ind, col in _emp_colors.items():
+    fig_emp.add_trace(go.Scatter(
+        x=[None], y=[None], mode="markers",
+        marker=dict(size=10, color=col),
+        name=ind, showlegend=True,
+    ))
+fig_emp.update_layout(legend=dict(orientation="h", y=-0.1))
+st.plotly_chart(fig_emp, use_container_width=True)
+
+# ── Hire / Retrain / Phase Out table ─────────────────────────────────────
+st.markdown("#### Role Signal Table")
+st.caption("Quick-reference for workforce planning decisions based on disruption score + posting trend")
+
+_signal_data = {
+    "Role":              ["ML Engineer", "Cybersecurity Eng.", "Cloud Architect",
+                          "Data Scientist", "Software Dev", "Financial Analyst",
+                          "Quant Analyst", "Data Analyst", "Actuary",
+                          "Registered Nurse", "Phys. Therapist", "Biomedical Eng."],
+    "Industry":          ["Tech","Tech","Tech","Tech","Tech","Finance",
+                          "Finance","Tech","Finance","Health","Health","Health"],
+    "Disruption Score":  [88, 34, 70, 76, 65, 58, 82, 72, 42, 28, 18, 31],
+    "Posting Growth":    ["+42%","+45%","+38%","+28%","+18%","+8%",
+                          "+12%","-4%","+15%","+31%","+26%","+22%"],
+    "Signal":            ["Hire Now", "Build Pipeline", "Hire Now",
+                          "Hire Now", "Retrain", "Retrain",
+                          "Phase Out", "Phase Out", "Stable",
+                          "Build Pipeline", "Build Pipeline", "Stable"],
+}
+_sig_df = pd.DataFrame(_signal_data).sort_values("Disruption Score", ascending=False)
+
+def _color_signal(val):
+    colors = {
+        "Hire Now":       "background-color:#EBF8FF;color:#1A365D;font-weight:600",
+        "Build Pipeline": "background-color:#F0FFF4;color:#1C4532;font-weight:600",
+        "Retrain":        "background-color:#FFFAF0;color:#7B341E;font-weight:600",
+        "Phase Out":      "background-color:#FFF5F5;color:#742A2A;font-weight:600",
+        "Stable":         "background-color:#F7FAFC;color:#2D3748;font-weight:600",
+    }
+    return colors.get(val, "")
+
+st.dataframe(
+    _sig_df.style.applymap(_color_signal, subset=["Signal"]),
+    use_container_width=True,
+    hide_index=True,
+)
+
+st.info(
+    "**How to read this:** Hire Now = high disruption + strong posting growth — "
+    "talent is still available but the window is closing. "
+    "Phase Out = high disruption + flat/falling demand — redirect recruiter time. "
+    "Retrain = moderate disruption — the role is changing, not disappearing."
+)
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown(
