@@ -862,7 +862,7 @@ def _color_signal(val):
     return colors.get(val, "")
 
 st.dataframe(
-    _sig_df.style.applymap(_color_signal, subset=["Signal"]),
+    _sig_df.style.map(_color_signal, subset=["Signal"]),
     use_container_width=True,
     hide_index=True,
 )
