@@ -718,22 +718,22 @@ st.markdown("---")
 st.markdown('<div id="employers"></div>', unsafe_allow_html=True)
 st.header("For Employers & Workforce Planners", anchor="employers-content")
 st.markdown(
-    "*The same data that tells students where to go tells hiring teams where demand is heading. "
-    "The gap between AI theory and observed postings is a timing signal — not just a risk score.*"
+    "*Job postings tell you what companies want. Layoffs tell you what they're letting go. "
+    "Put them together and you have a hiring signal — not just a risk ranking.*"
 )
 
 # ── Three decision cards ──────────────────────────────────────────────────
 emp_cols = st.columns(3)
 _emp_cards = [
-    ("#065A82", "HIRE AHEAD OF THE SHIFT",
-     "Roles with high theoretical disruption but still-strong posting growth are in a hiring window. "
-     "Talent is available now. In 18–24 months the market will have caught up."),
-    ("#02C39A", "RETRAIN BEFORE YOU REPLACE",
-     "A disruption score of 45–70 usually means the role is changing, not disappearing. "
-     "Retraining a current employee costs a fraction of a new hire and preserves institutional knowledge."),
-    ("#F7C548", "STOP SOURCING FOR DECLINING ROLES",
-     "Roles above 75 with flat or falling posting growth are contracting. "
-     "Redirecting recruiter time away from those pipelines is immediate cost savings."),
+    ("#065A82", "HIRE NOW, NOT LATER",
+     "Some roles score high on AI disruption but postings are still climbing. "
+     "That gap closes. Talent is easier to find today than it will be in a year."),
+    ("#02C39A", "RETRAIN FIRST",
+     "A score in the middle range usually means the job is shifting, not going away. "
+     "The people doing it already know the domain — that's worth keeping."),
+    ("#F7C548", "STOP BUILDING THAT PIPELINE",
+     "High disruption score, postings falling. "
+     "That's a role the market is moving away from. Recruiter time spent there is wasted."),
 ]
 for col, (color, heading, body) in zip(emp_cols, _emp_cards):
     with col:
@@ -1154,32 +1154,148 @@ if True:  # Earnings & ROI
         col1, col2 = st.columns(2)
 
         with col1:
-            # Earnings by institution type
-            fig = px.box(
-                earn_df, x="CONTROL_NAME", y="MD_EARN_WNE_P10",
-                color="CONTROL_NAME",
-                title="Median Earnings (10yr) by Institution Type",
-                labels={"MD_EARN_WNE_P10": "Median Earnings ($)", "CONTROL_NAME": "Type"},
-                color_discrete_sequence=px.colors.qualitative.Set2,
+            # Top 20 schools by median 10-yr earnings
+            top20 = (
+                earn_df.dropna(subset=["INSTNM"])
+                .nlargest(20, "MD_EARN_WNE_P10")
+                [["INSTNM", "MD_EARN_WNE_P10", "CONTROL_NAME"]]
+                .sort_values("MD_EARN_WNE_P10")
             )
-            fig.update_layout(showlegend=False)
+            _type_colors = {
+                "Public": "#378ADD",
+                "Private Nonprofit": "#1D9E75",
+                "Private For-Profit": "#EF9F27",
+            }
+            fig = go.Figure(go.Bar(
+                x=top20["MD_EARN_WNE_P10"],
+                y=top20["INSTNM"],
+                orientation="h",
+                marker_color=[
+                    _type_colors.get(t, "#888") for t in top20["CONTROL_NAME"]
+                ],
+                customdata=top20[["CONTROL_NAME", "MD_EARN_WNE_P10"]].values,
+                hovertemplate=(
+                    "<b>%{y}</b><br>"
+                    "%{customdata[0]}<br>"
+                    "10-yr earnings: $%{customdata[1]:,.0f}<extra></extra>"
+                ),
+            ))
+            fig.update_layout(
+                title="Top 20 Schools by 10-Year Earnings",
+                xaxis=dict(title="Median Earnings ($)", tickprefix="$", tickformat=","),
+                yaxis=dict(tickfont=dict(size=11)),
+                height=480,
+                margin=dict(l=10, r=10, t=40, b=20),
+                template="plotly_white",
+            )
+            # Inline legend for institution type
+            for label, color in _type_colors.items():
+                fig.add_trace(go.Bar(
+                    x=[None], y=[None], orientation="h",
+                    name=label, marker_color=color, showlegend=True,
+                    hoverinfo="skip",
+                ))
+            fig.update_layout(legend=dict(orientation="h", y=-0.08, font=dict(size=11)))
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            # Earnings vs Cost scatter
-            cost_earn = earn_df.dropna(subset=["COSTT4_A"]).copy()
+            # Value-for-money scatter with break-even line
+            cost_earn = earn_df.dropna(subset=["COSTT4_A", "INSTNM"]).copy()
             if not cost_earn.empty:
-                fig2 = px.scatter(
-                    cost_earn, x="COSTT4_A", y="MD_EARN_WNE_P10",
-                    color="CONTROL_NAME", opacity=0.5,
-                    size="UGDS", size_max=15,
-                    title="Cost vs Earnings (10yr)",
-                    labels={"COSTT4_A": "Avg Annual Cost ($)", "MD_EARN_WNE_P10": "Median Earnings ($)"},
-                    color_discrete_sequence=px.colors.qualitative.Set2,
-                    hover_data=["INSTNM"],
+                # Break-even: annual earnings = 10x annual cost (earn back tuition in one year)
+                cost_earn["above_breakeven"] = (
+                    cost_earn["MD_EARN_WNE_P10"] >= cost_earn["COSTT4_A"] * 10
                 )
-                fig2.update_layout(legend=dict(orientation="h", y=-0.2))
+                _ce_colors = {
+                    "Public": "#378ADD",
+                    "Private Nonprofit": "#1D9E75",
+                    "Private For-Profit": "#EF9F27",
+                }
+                fig2 = go.Figure()
+                for itype, grp in cost_earn.groupby("CONTROL_NAME"):
+                    fig2.add_trace(go.Scatter(
+                        x=grp["COSTT4_A"],
+                        y=grp["MD_EARN_WNE_P10"],
+                        mode="markers",
+                        name=itype,
+                        marker=dict(
+                            color=_ce_colors.get(itype, "#888"),
+                            size=6,
+                            opacity=0.55,
+                        ),
+                        customdata=grp[["INSTNM", "CONTROL_NAME",
+                                        "COSTT4_A", "MD_EARN_WNE_P10"]].values,
+                        hovertemplate=(
+                            "<b>%{customdata[0]}</b><br>"
+                            "%{customdata[1]}<br>"
+                            "Annual cost: $%{customdata[2]:,.0f}<br>"
+                            "10-yr earnings: $%{customdata[3]:,.0f}"
+                            "<extra></extra>"
+                        ),
+                    ))
+
+                # Break-even line: earnings = cost × 10
+                _x_range = [cost_earn["COSTT4_A"].min(), cost_earn["COSTT4_A"].max()]
+                fig2.add_trace(go.Scatter(
+                    x=_x_range,
+                    y=[v * 10 for v in _x_range],
+                    mode="lines",
+                    name="Break-even",
+                    line=dict(color="#E53E3E", width=1.5, dash="dash"),
+                    hoverinfo="skip",
+                ))
+
+                # Label top outliers above break-even (best value)
+                _best = (
+                    cost_earn[cost_earn["above_breakeven"]]
+                    .nlargest(5, "MD_EARN_WNE_P10")
+                )
+                for _, row in _best.iterrows():
+                    # Shorten long names
+                    label = row["INSTNM"]
+                    if len(label) > 28:
+                        label = label[:26] + "…"
+                    fig2.add_annotation(
+                        x=row["COSTT4_A"], y=row["MD_EARN_WNE_P10"],
+                        text=label,
+                        showarrow=True, arrowhead=2, arrowwidth=1,
+                        arrowcolor="#555", ax=30, ay=-22,
+                        font=dict(size=9, color="#1C293C"),
+                        bgcolor="rgba(255,255,255,0.85)",
+                        bordercolor="#ccc", borderwidth=0.5,
+                    )
+
+                # Quadrant labels
+                _xmid = cost_earn["COSTT4_A"].quantile(0.75)
+                _ymax = cost_earn["MD_EARN_WNE_P10"].max()
+                _ymin = cost_earn["MD_EARN_WNE_P10"].min()
+                fig2.add_annotation(
+                    x=_xmid * 0.35, y=_ymax * 0.97,
+                    text="<b>Great value</b>",
+                    showarrow=False, font=dict(size=10, color="#1D9E75"),
+                    bgcolor="rgba(255,255,255,0.8)",
+                )
+                fig2.add_annotation(
+                    x=_xmid * 1.55, y=_ymin * 1.6,
+                    text="<b>Poor value</b>",
+                    showarrow=False, font=dict(size=10, color="#E53E3E"),
+                    bgcolor="rgba(255,255,255,0.8)",
+                )
+
+                fig2.update_layout(
+                    title="Cost vs. 10-Year Earnings — Value for Money",
+                    xaxis=dict(title="Avg Annual Cost ($)", tickprefix="$", tickformat=","),
+                    yaxis=dict(title="Median 10-yr Earnings ($)", tickprefix="$", tickformat=","),
+                    legend=dict(orientation="h", y=-0.18, font=dict(size=11)),
+                    height=480,
+                    template="plotly_white",
+                    margin=dict(t=40, b=20),
+                )
                 st.plotly_chart(fig2, use_container_width=True)
+                st.caption(
+                    "Dashed line = break-even (10-yr earnings equal 10× annual tuition cost). "
+                    "Schools above the line return more than they cost."
+                )
 
         col3, col4 = st.columns(2)
 
@@ -1199,38 +1315,93 @@ if True:  # Earnings & ROI
                 st.plotly_chart(fig3, use_container_width=True)
 
         with col4:
-            # Debt by type
-            debt_df = earn_df.dropna(subset=["GRAD_DEBT_MDN"]).copy()
+            # Debt by type — top 20 highest-debt schools
+            debt_df = earn_df.dropna(subset=["GRAD_DEBT_MDN", "INSTNM"]).copy()
             if not debt_df.empty:
-                fig4 = px.box(
-                    debt_df, x="CONTROL_NAME", y="GRAD_DEBT_MDN",
-                    color="CONTROL_NAME",
-                    title="Graduate Debt by Institution Type",
-                    labels={"GRAD_DEBT_MDN": "Median Grad Debt ($)", "CONTROL_NAME": "Type"},
-                    color_discrete_sequence=px.colors.qualitative.Set2,
+                _debt_top20 = (
+                    debt_df.nlargest(20, "GRAD_DEBT_MDN")
+                    [["INSTNM", "GRAD_DEBT_MDN", "CONTROL_NAME"]]
+                    .sort_values("GRAD_DEBT_MDN")
                 )
-                fig4.update_layout(showlegend=False)
+                fig4 = go.Figure(go.Bar(
+                    x=_debt_top20["GRAD_DEBT_MDN"],
+                    y=_debt_top20["INSTNM"],
+                    orientation="h",
+                    marker_color=[
+                        _type_colors.get(t, "#888") for t in _debt_top20["CONTROL_NAME"]
+                    ],
+                    customdata=_debt_top20[["CONTROL_NAME", "GRAD_DEBT_MDN"]].values,
+                    hovertemplate=(
+                        "<b>%{y}</b><br>"
+                        "%{customdata[0]}<br>"
+                        "Median grad debt: $%{customdata[1]:,.0f}"
+                        "<extra></extra>"
+                    ),
+                ))
+                fig4.update_layout(
+                    title="Top 20 Schools by Graduate Debt",
+                    xaxis=dict(title="Median Grad Debt ($)", tickprefix="$", tickformat=","),
+                    yaxis=dict(tickfont=dict(size=11)),
+                    height=480,
+                    margin=dict(l=10, r=10, t=40, b=20),
+                    template="plotly_white",
+                    showlegend=False,
+                )
                 st.plotly_chart(fig4, use_container_width=True)
 
         # Earnings by selectivity
         st.subheader("Earnings by Selectivity")
         sel_earn = earn_df.dropna(subset=["ADM_RATE"]).copy()
         if not sel_earn.empty:
+            _sel_labels = [
+                "Highly Selective\n(<15%)",
+                "Very Selective\n(15–30%)",
+                "Selective\n(30–50%)",
+                "Moderate\n(50–75%)",
+                "Open\n(75–100%)",
+            ]
             sel_earn["Selectivity"] = pd.cut(
                 sel_earn["ADM_RATE"],
                 bins=[0, 0.15, 0.30, 0.50, 0.75, 1.0],
-                labels=["Highly Selective (<15%)", "Very Selective (15–30%)",
-                         "Selective (30–50%)", "Moderate (50–75%)", "Open (75–100%)"],
+                labels=_sel_labels,
             )
-            fig5 = px.box(
-                sel_earn.dropna(subset=["Selectivity"]),
-                x="Selectivity", y="MD_EARN_WNE_P10",
-                color="Selectivity",
-                title="Median Earnings by Admission Selectivity",
-                labels={"MD_EARN_WNE_P10": "Median Earnings ($)"},
-                color_discrete_sequence=px.colors.sequential.Viridis,
+            _sel_summary = (
+                sel_earn.dropna(subset=["Selectivity"])
+                .groupby("Selectivity", observed=True)
+                .agg(
+                    median_earn=("MD_EARN_WNE_P10", "median"),
+                    count=("INSTNM", "count"),
+                )
+                .reset_index()
             )
-            fig5.update_layout(showlegend=False, xaxis_tickangle=-30)
+            _sel_colors = ["#042C53", "#185FA5", "#378ADD", "#85B7EB", "#B5D4F4"]
+            fig5 = go.Figure(go.Bar(
+                x=_sel_summary["Selectivity"],
+                y=_sel_summary["median_earn"],
+                marker_color=_sel_colors[: len(_sel_summary)],
+                customdata=_sel_summary[["median_earn", "count"]].values,
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Median 10-yr earnings: $%{customdata[0]:,.0f}<br>"
+                    "Schools in group: %{customdata[1]}"
+                    "<extra></extra>"
+                ),
+                text=["$" + f"{v:,.0f}" for v in _sel_summary["median_earn"]],
+                textposition="outside",
+                textfont=dict(size=11),
+            ))
+            fig5.update_layout(
+                title="Median 10-Year Earnings by Admission Selectivity",
+                yaxis=dict(
+                    title="Median Earnings ($)",
+                    tickprefix="$", tickformat=",",
+                    range=[0, _sel_summary["median_earn"].max() * 1.18],
+                ),
+                xaxis=dict(tickfont=dict(size=11)),
+                template="plotly_white",
+                showlegend=False,
+                margin=dict(t=40, b=20),
+            )
             st.plotly_chart(fig5, use_container_width=True)
 
 
@@ -1275,20 +1446,91 @@ if True:  # Admissions
             fig2.update_layout(legend=dict(orientation="h", y=-0.2))
             st.plotly_chart(fig2, use_container_width=True)
 
-    # SAT vs Admission Rate
-    sat_adm = filtered.dropna(subset=["SAT_AVG", "ADM_RATE"]).copy()
+    # SAT vs Admission Rate — heatmap + notable schools
+    sat_adm = filtered.dropna(subset=["SAT_AVG", "ADM_RATE", "INSTNM"]).copy()
     if not sat_adm.empty:
-        fig3 = px.scatter(
-            sat_adm, x="ADM_RATE", y="SAT_AVG",
-            color="CONTROL_NAME", opacity=0.6,
-            size="UGDS", size_max=15,
-            title="Admission Rate vs SAT Average",
-            labels={"ADM_RATE": "Admission Rate", "SAT_AVG": "Average SAT"},
-            color_discrete_sequence=px.colors.qualitative.Set2,
-            hover_data=["INSTNM", "STABBR"],
+        fig3 = go.Figure()
+
+        # Density heatmap as the base layer
+        fig3.add_trace(go.Histogram2dContour(
+            x=sat_adm["ADM_RATE"],
+            y=sat_adm["SAT_AVG"],
+            colorscale="Blues",
+            reversescale=False,
+            showscale=True,
+            contours=dict(showlabels=False),
+            line=dict(width=0),
+            hoverinfo="skip",
+            colorbar=dict(title="Density", thickness=12, len=0.6),
+        ))
+
+        # Notable schools — pin well-known names if they exist in the filtered data
+        _notable = [
+            "Massachusetts Institute of Technology",
+            "Stanford University",
+            "Harvard University",
+            "University of California-Berkeley",
+            "University of Michigan-Ann Arbor",
+            "New York University",
+            "Arizona State University-Tempe",
+            "Howard University",
+            "Purdue University-Main Campus",
+            "University of Texas at Austin",
+        ]
+        _pins = sat_adm[sat_adm["INSTNM"].isin(_notable)].copy()
+
+        if not _pins.empty:
+            fig3.add_trace(go.Scatter(
+                x=_pins["ADM_RATE"],
+                y=_pins["SAT_AVG"],
+                mode="markers+text",
+                name="Notable schools",
+                marker=dict(
+                    color="#E53E3E",
+                    size=9,
+                    symbol="circle",
+                    line=dict(color="white", width=1.5),
+                ),
+                text=_pins["INSTNM"].str.replace(
+                    r"University|Institute of Technology|-.*$", "", regex=True
+                ).str.strip(),
+                textposition="top center",
+                textfont=dict(size=9, color="#1C293C"),
+                customdata=_pins[["INSTNM", "ADM_RATE", "SAT_AVG"]].values,
+                hovertemplate=(
+                    "<b>%{customdata[0]}</b><br>"
+                    "Admission rate: %{customdata[1]:.0%}<br>"
+                    "Avg SAT: %{customdata[2]:.0f}"
+                    "<extra></extra>"
+                ),
+            ))
+
+        # Quadrant reference lines
+        fig3.add_vline(x=0.5, line_dash="dot", line_color="#aaa", line_width=1)
+        fig3.add_hline(y=1200, line_dash="dot", line_color="#aaa", line_width=1)
+
+        fig3.update_layout(
+            title="Admission Rate vs. SAT Average — School Density",
+            xaxis=dict(
+                title="Admission Rate",
+                tickformat=".0%",
+                range=[0, 1],
+            ),
+            yaxis=dict(
+                title="Average SAT Score",
+                range=[sat_adm["SAT_AVG"].min() - 20, sat_adm["SAT_AVG"].max() + 20],
+            ),
+            height=480,
+            template="plotly_white",
+            legend=dict(orientation="h", y=-0.12),
+            margin=dict(t=40, b=20),
         )
-        fig3.update_layout(legend=dict(orientation="h", y=-0.2))
         st.plotly_chart(fig3, use_container_width=True)
+        st.caption(
+            "Colour density shows where most schools cluster. "
+            "Red markers = notable institutions. "
+            "Dashed lines at 50% admission rate and SAT 1200."
+        )
 
     # Trends over time
     st.subheader("Trends Over Time")
