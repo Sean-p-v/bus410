@@ -499,15 +499,15 @@ with _lay_chart_right:
         name="Before (5 factors)",
         x=_ba_roles,
         y=_before,
-        marker_color=[c + "88" for c in _bar_colors],
-        marker_line_color=_bar_colors,
-        marker_line_width=2,
+        marker_color=_bar_colors,
+        opacity=0.4,
     ))
     fig_ba.add_trace(go.Bar(
         name="After (+ Layoff 15%)",
         x=_ba_roles,
         y=_after,
         marker_color=_bar_colors,
+        opacity=0.95,
     ))
     for i, (role, d) in enumerate(zip(_ba_roles, _delta)):
         if d > 0:
