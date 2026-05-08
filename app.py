@@ -199,29 +199,28 @@ st.sidebar.markdown(
     "[🎓 Student Guide](#student-guide)"
 )
 st.sidebar.markdown("---")
-st.sidebar.subheader("Explorer Filters")
 
-# Year
-years = sorted(df["YEAR"].dropna().unique())
-sel_years = st.sidebar.multiselect("Academic Year", years, default=years)
+with st.sidebar.expander("Explorer Filters", expanded=False):
+    # Year
+    years = sorted(df["YEAR"].dropna().unique())
+    sel_years = st.multiselect("Academic Year", years, default=years)
 
-# Institution type
-inst_types = ["Public", "Private Nonprofit", "Private For-Profit"]
-sel_types = st.sidebar.multiselect("Institution Type", inst_types, default=inst_types)
+    # Institution type
+    inst_types = ["Public", "Private Nonprofit", "Private For-Profit"]
+    sel_types = st.multiselect("Institution Type", inst_types, default=inst_types)
 
-# Degree level
-deg_opts = sorted(df["PREDDEG_NAME"].dropna().unique())
-sel_degs = st.sidebar.multiselect("Predominant Degree", deg_opts, default=["Bachelor's"])
+    # Degree level
+    deg_opts = sorted(df["PREDDEG_NAME"].dropna().unique())
+    sel_degs = st.multiselect("Predominant Degree", deg_opts, default=["Bachelor's"])
 
-# State
-states = sorted(df["STABBR"].dropna().unique())
-sel_states = st.sidebar.multiselect("State", states, default=[])
+    # State
+    states = sorted(df["STABBR"].dropna().unique())
+    sel_states = st.multiselect("State", states, default=[])
 
-# Size filter
-st.sidebar.markdown("---")
-st.sidebar.subheader("Size & Selectivity")
-min_size = st.sidebar.number_input("Min enrollment", value=0, step=500)
-max_adm = st.sidebar.slider("Max admission rate", 0.0, 1.0, 1.0, 0.05)
+    st.markdown("---")
+    st.caption("Size & Selectivity")
+    min_size = st.number_input("Min enrollment", value=0, step=500)
+    max_adm = st.slider("Max admission rate", 0.0, 1.0, 1.0, 0.05)
 
 # Apply filters
 mask = (
