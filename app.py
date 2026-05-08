@@ -186,7 +186,7 @@ st.sidebar.markdown(
     "[Student Implications](#implications)  \n"
     "[Five Takeaways](#takeaways)"
 )
-st.sidebar.markdown("[For Employers](#employers)  \n")
+st.sidebar.markdown("[For Employers](#employers)  \n[Where This Goes Next](#monetization)  \n")
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Data Explorer**")
 st.sidebar.markdown(
@@ -872,6 +872,154 @@ st.info(
     "Phase Out = high disruption + flat/falling demand — redirect recruiter time. "
     "Retrain = moderate disruption — the role is changing, not disappearing."
 )
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown(
+    '<p style="text-align:right;">'
+    '<a href="#top" style="color:#667eea;font-size:0.85rem;">↑ Back to top</a></p>',
+    unsafe_allow_html=True
+)
+st.markdown("---")
+
+# ════════════════════════════════════════════════════════════════════════════
+# NARRATIVE SECTION F: WHERE THIS GOES NEXT (MONETIZATION)
+# ════════════════════════════════════════════════════════════════════════════
+st.markdown('<div id="monetization"></div>', unsafe_allow_html=True)
+st.header("Where This Goes Next", anchor="monetization-content")
+st.markdown(
+    "*This platform sits on something recruiters, career counselors, and HR departments "
+    "don't have — a scored, data-backed view of which roles AI is actually displacing "
+    "versus growing. That's the product.*"
+)
+
+# ── Three-tier product ───────────────────────────────────────────────────
+st.markdown("### Three-tier product")
+tier_cols = st.columns(3)
+_tiers = [
+    ("#E6F1FB", "#185FA5", "#0C447C", "B2C", "Student / Job Seeker",
+     "College students, early career",
+     "$9 / month",
+     [
+         "Personalized disruption score for your degree + target role",
+         "Career path risk report (PDF export)",
+         "Salary outlook with AI adjustment",
+         "Monthly market pulse email",
+     ]),
+    ("#EAF3DE", "#3B6D11", "#27500A", "B2B — Universities", "Campus License",
+     "Career services departments",
+     "$8,000 / year per school",
+     [
+         "Unlimited student access under one license",
+         "Advisor dashboard with cohort-level risk view",
+         "Co-branded portal",
+         "Quarterly industry report for department use",
+     ]),
+    ("#FAEEDA", "#854F0B", "#633806", "B2B — Enterprise", "Workforce Intelligence",
+     "HR, talent, and strategy teams",
+     "$30,000 / year",
+     [
+         "Role-level disruption scoring for internal headcount",
+         "Hire vs. retrain vs. phase-out signal table",
+         "Custom industry and region filters",
+         "Dedicated data refresh + analyst briefing",
+     ]),
+]
+for col, (bg, accent, dark, badge, name, who, price, features) in zip(tier_cols, _tiers):
+    with col:
+        feats_html = "".join(
+            f'<li style="padding:3px 0;color:#4A5568;">— {f}</li>' for f in features
+        )
+        st.markdown(f"""
+<div style="background:white;border:1px solid #E2E8F0;border-radius:14px;
+            padding:1.3rem 1.5rem;height:100%;">
+  <div style="display:inline-block;background:{bg};color:{accent};
+              font-size:0.75rem;font-weight:700;padding:3px 10px;
+              border-radius:20px;margin-bottom:0.7rem;">{badge}</div>
+  <div style="font-size:1.05rem;font-weight:700;color:#1C293C;margin-bottom:2px;">{name}</div>
+  <div style="font-size:0.82rem;color:#718096;margin-bottom:0.8rem;">{who}</div>
+  <div style="font-size:1.4rem;font-weight:700;color:{accent};
+              margin-bottom:1rem;border-bottom:1px solid #E2E8F0;padding-bottom:0.8rem;">{price}</div>
+  <ul style="list-style:none;padding:0;margin:0;font-size:0.88rem;line-height:1.8;">
+    {feats_html}
+  </ul>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Supporting revenue streams ────────────────────────────────────────────
+st.markdown("### Supporting revenue streams")
+rev_cols = st.columns(2)
+_rev_streams = [
+    ("#EAF3DE", "#3B6D11", "Affiliate", "Upskilling partnerships",
+     "When a user lands in a high-risk role, surface relevant Coursera, LinkedIn Learning, "
+     "or bootcamp courses. 20–30% affiliate commission per enrollment. "
+     "The incentive aligns directly with what the user actually needs."),
+    ("#E6F1FB", "#185FA5", "API", "Disruption score API",
+     "Sell programmatic access to the scoring model. Recruiting platforms and job boards "
+     "can embed role-level AI risk scores in listings. "
+     "Usage-based pricing at $0.01 per query scales automatically with adoption."),
+    ("#FAEEDA", "#854F0B", "Reports", "Custom industry reports",
+     "One-off deep dives commissioned by consulting firms, government agencies, or think tanks. "
+     "Each report covers a single industry with full methodology and forecasts. $5–15K per report."),
+    ("#FBEAF0", "#993556", "Sponsorship", "Sponsored insights",
+     "Certification bodies (CFA Institute, AWS, PMI) sponsor the 'What to do next' section "
+     "on relevant role pages. Native placement, no banner ads. Flat fee per quarter."),
+]
+for i, (bg, accent, tag, title, body) in enumerate(_rev_streams):
+    with rev_cols[i % 2]:
+        st.markdown(f"""
+<div style="background:white;border:1px solid #E2E8F0;border-radius:12px;
+            padding:1.2rem 1.4rem;margin-bottom:0.8rem;">
+  <div style="display:inline-block;background:{bg};color:{accent};
+              font-size:0.72rem;font-weight:700;padding:2px 9px;
+              border-radius:20px;margin-bottom:0.6rem;">{tag}</div>
+  <div style="font-size:0.95rem;font-weight:700;color:#1C293C;margin-bottom:0.4rem;">{title}</div>
+  <div style="font-size:0.87rem;color:#4A5568;line-height:1.7;">{body}</div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Roadmap ───────────────────────────────────────────────────────────────
+st.markdown("### Roadmap")
+road_cols = st.columns(3)
+_phases = [
+    ("Phase 1 — Now", "Launch & validate",
+     ["Public free tier to build audience",
+      "Soft launch at 2–3 partner universities",
+      "Affiliate links on high-disruption role pages",
+      "Collect user feedback on score accuracy"]),
+    ("Phase 2 — Year 1", "Monetize & grow",
+     ["Paywall the personal risk report",
+      "Sign 5–10 campus licenses ($40–80K ARR)",
+      "Release public API with free + paid tiers",
+      "Publish first sponsored industry report"]),
+    ("Phase 3 — Year 2+", "Scale & differentiate",
+     ["Enterprise contracts with HR platforms",
+      "Live BLS + job posting data pipeline",
+      "Expand to international labor markets",
+      "Consider seed round or acquisition"]),
+]
+_phase_colors = ["#065A82", "#02C39A", "#F7C548"]
+for col, (phase, title, items), color in zip(road_cols, _phases, _phase_colors):
+    with col:
+        items_html = "".join(
+            f'<li style="padding:3px 0;color:#C8DDF0;font-size:0.87rem;">· {it}</li>'
+            for it in items
+        )
+        st.markdown(f"""
+<div style="background:#1C293C;border-radius:12px;padding:1.3rem 1.5rem;
+            border-top:3px solid {color};height:100%;">
+  <div style="color:{color};font-size:0.75rem;font-weight:700;
+              letter-spacing:0.06em;margin-bottom:0.4rem;">{phase.upper()}</div>
+  <div style="color:white;font-size:1rem;font-weight:700;
+              margin-bottom:0.9rem;">{title}</div>
+  <ul style="list-style:none;padding:0;margin:0;">
+    {items_html}
+  </ul>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown(
